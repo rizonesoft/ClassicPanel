@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 
+    ClassicPanel Extension Project Template
+    
+    This is a template for creating CPL extensions for ClassicPanel.
+    Extensions are framework-dependent DLLs that use the runtime from ClassicPanel.exe.
+    
+    IMPORTANT:
+    - Extensions MUST be framework-dependent (NOT self-contained)
+    - Extensions output to system/ folder (configured in Directory.Build.props)
+    - Extensions use the runtime from the main ClassicPanel.exe
+    - See docs/dev/extension-deployment.md for details
+  -->
+  
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <OutputType>Library</OutputType>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    
+    <!-- Framework-dependent - NO SelfContained -->
+    <!-- Extensions use the runtime from ClassicPanel.exe -->
+    <!-- Output path is automatically configured by Directory.Build.props to system/ folder -->
+    
+    <Version>1.0.0</Version>
+    <Authors>ClassicPanel Extension</Authors>
+    <Company>Rizonesoft</Company>
+    <Product>ClassicPanel Extension</Product>
+    <Description>ClassicPanel CPL Extension Template</Description>
+    <Copyright>Copyright © 2025 Rizonetech (Pty) Ltd</Copyright>
+  </PropertyGroup>
+
+</Project>
+

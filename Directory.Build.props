@@ -1,0 +1,46 @@
+<Project>
+  <!-- Override default output paths to use build/ directory instead of src/bin and src/obj -->
+  <PropertyGroup>
+    <!-- Base output path: build/configuration (e.g., build/release) -->
+    <!-- Note: Configuration names are lowercase for directory names (release, debug) -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)build\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)build\obj\</BaseIntermediateOutputPath>
+    
+    <!-- Detect if this is an extension project (in src/Extensions/ folder) -->
+    <IsExtensionProject Condition="$(MSBuildProjectDirectory.Contains('Extensions'))">true</IsExtensionProject>
+    <IsExtensionProject Condition="'$(IsExtensionProject)' == ''">false</IsExtensionProject>
+    
+    <!-- Extension projects output to system/ subfolder -->
+    <!-- Regular builds: build/configuration/system/ -->
+    <!-- Published builds: build/publish/system/ -->
+    <ExtensionOutputSubfolder Condition="'$(IsExtensionProject)' == 'true'">system\</ExtensionOutputSubfolder>
+    <ExtensionOutputSubfolder Condition="'$(ExtensionOutputSubfolder)' == ''"></ExtensionOutputSubfolder>
+    
+    <!-- Output path for each configuration -->
+    <!-- Main app: build/configuration/ -->
+    <!-- Extensions: build/configuration/system/ -->
+    <OutputPath Condition="'$(Configuration)' == 'Release' AND '$(IsExtensionProject)' != 'true'">$(BaseOutputPath)release\</OutputPath>
+    <OutputPath Condition="'$(Configuration)' == 'Release' AND '$(IsExtensionProject)' == 'true'">$(BaseOutputPath)release\$(ExtensionOutputSubfolder)</OutputPath>
+    <OutputPath Condition="'$(Configuration)' == 'Debug' AND '$(IsExtensionProject)' != 'true'">$(BaseOutputPath)debug\</OutputPath>
+    <OutputPath Condition="'$(Configuration)' == 'Debug' AND '$(IsExtensionProject)' == 'true'">$(BaseOutputPath)debug\$(ExtensionOutputSubfolder)</OutputPath>
+    
+    <IntermediateOutputPath Condition="'$(Configuration)' == 'Release'">$(BaseIntermediateOutputPath)release\</IntermediateOutputPath>
+    <IntermediateOutputPath Condition="'$(Configuration)' == 'Debug'">$(BaseIntermediateOutputPath)debug\</IntermediateOutputPath>
+    
+    <!-- Publish directory - shared across all configurations -->
+    <!-- Main app: build/publish/ -->
+    <!-- Extensions: build/publish/system/ -->
+    <PublishDir Condition="'$(IsExtensionProject)' != 'true'">$(BaseOutputPath)publish\</PublishDir>
+    <PublishDir Condition="'$(IsExtensionProject)' == 'true'">$(BaseOutputPath)publish\$(ExtensionOutputSubfolder)</PublishDir>
+    
+    <!-- Ensure single-file publishes don't extract DLLs to the publish directory -->
+    <!-- Note: This only applies to main app, extensions are framework-dependent DLLs -->
+    <PublishSingleFile Condition="'$(IsExtensionProject)' != 'true'">true</PublishSingleFile>
+    <IncludeAllContentForSelfExtract Condition="'$(IsExtensionProject)' != 'true'">false</IncludeAllContentForSelfExtract>
+    
+    <!-- Extension projects MUST be framework-dependent (NOT self-contained) -->
+    <!-- Extensions use the runtime from the main ClassicPanel.exe -->
+    <SelfContained Condition="'$(IsExtensionProject)' == 'true'">false</SelfContained>
+    <PublishSingleFile Condition="'$(IsExtensionProject)' == 'true'">false</PublishSingleFile>
+  </PropertyGroup>
+</Project>

@@ -229,9 +229,31 @@ The published executable is ready for distribution at `build/publish/ClassicPane
 
 **IMPORTANT**: ClassicPanel uses a hybrid deployment model:
 - **Main Application** (ClassicPanel.exe): Self-contained with ReadyToRun (~120 MB)
-- **Extensions** (.cpl files): Framework-dependent (typically 50 KB - 5 MB each)
+- **Extensions** (.cpl/.dll files): Framework-dependent (typically 50 KB - 5 MB each)
 
 Extensions **DO NOT** use self-contained deployment. They rely on the .NET runtime provided by the main ClassicPanel.exe application. This prevents having 100+ extensions each being 120 MB (which would total 12+ GB).
+
+### Extension Output Configuration
+
+Extension projects are automatically configured by `Directory.Build.props`:
+- Projects in `src/Extensions/` are automatically detected
+- Extensions output to `system/` subfolder:
+  - Debug: `build/debug/system/net10.0-windows/win-x64/ExtensionName.dll`
+  - Release: `build/release/system/net10.0-windows/win-x64/ExtensionName.dll`
+  - Published: `build/publish/system/net10.0-windows/win-x64/ExtensionName.dll`
+- Extensions are automatically configured as framework-dependent (NOT self-contained)
+- Extensions use the runtime from the main ClassicPanel.exe
+
+### Building Extensions
+
+```bash
+# Build a specific extension
+cd src/Extensions/ExtensionName
+dotnet build -c Release -p:GenerateAssemblyInfo=false
+
+# Build all extensions (when build script is created)
+.\build\build-extensions.bat
+```
 
 See [Extension Deployment Guide](extension-deployment.md) for detailed information on building extensions.
 

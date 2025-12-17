@@ -1,0 +1,183 @@
+# Extension Deployment Strategy
+
+## Overview
+
+ClassicPanel uses a **hybrid deployment model**:
+- **Main Application**: Self-contained with ReadyToRun (includes .NET runtime)
+- **Extensions**: Framework-dependent (rely on runtime from main app)
+
+This approach ensures:
+- ✅ Single runtime for all components (~120 MB total, not per extension)
+- ✅ Extensions are small and lightweight (typically 50 KB - 5 MB each)
+- ✅ All extensions share the same runtime from the main app
+- ✅ No need for .NET installation on user systems
+
+## Architecture
+
+```
+ClassicPanel/
+├── ClassicPanel.exe          # Self-contained (~120 MB) - Includes .NET runtime
+└── system/
+    ├── SystemProperties.cpl  # Framework-dependent (~200 KB) - Uses main app's runtime
+    ├── TaskManager.cpl       # Framework-dependent (~150 KB)
+    ├── RegistryEditor.cpl    # Framework-dependent (~300 KB)
+    └── ... (100+ extensions) # All framework-dependent
+```
+
+**Total Size**: ~120 MB (main app) + ~10-50 MB (all extensions combined) = ~130-170 MB
+
+## Extension Build Configuration
+
+### ❌ DO NOT Use Self-Contained for Extensions
+
+**Wrong** (would create 100+ × 120 MB = 12+ GB):
+```xml
+<PropertyGroup>
+  <SelfContained>true</SelfContained>  <!-- ❌ DON'T DO THIS -->
+  <PublishSingleFile>true</PublishSingleFile>
+</PropertyGroup>
+```
+
+### ✅ DO Use Framework-Dependent for Extensions
+
+**Correct** (small DLLs that use main app's runtime):
+```xml
+<PropertyGroup>
+  <TargetFramework>net10.0-windows</TargetFramework>
+  <UseWindowsForms>true</UseWindowsForms>
+  <!-- NO SelfContained - extensions use main app's runtime -->
+  <!-- NO PublishSingleFile - regular DLL output -->
+  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+</PropertyGroup>
+```
+
+## Build Outputs
+
+### Main Application
+- **Location**: `build/publish/ClassicPanel.exe`
+- **Type**: Self-contained single file with ReadyToRun
+- **Size**: ~122 MB
+- **Contains**: Application code + .NET runtime bundled
+
+### Extensions
+- **Debug Build**: `build/debug/system/net10.0-windows/win-x64/ExtensionName.dll`
+- **Release Build**: `build/release/system/net10.0-windows/win-x64/ExtensionName.dll`
+- **Published**: `build/publish/system/net10.0-windows/win-x64/ExtensionName.dll`
+- **Type**: Framework-dependent DLLs
+- **Size**: Typically 50 KB - 5 MB each (depending on functionality)
+- **Contains**: Extension code only (no runtime)
+
+**Note**: Extension output paths are automatically configured by `Directory.Build.props`. Projects in `src/Extensions/` are automatically detected and configured to output to the `system/` subfolder.
+
+## Extension Project Template
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <OutputType>Library</OutputType>  <!-- DLL, not executable -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    
+    <!-- Framework-dependent - NO SelfContained -->
+    <!-- Extensions use the runtime from ClassicPanel.exe -->
+  </PropertyGroup>
+</Project>
+```
+
+## Why This Works
+
+1. **Main App Provides Runtime**: When ClassicPanel.exe starts, it loads the .NET runtime
+2. **Extensions Load into Same Process**: Extensions are loaded as DLLs into the main app's process
+3. **Shared Runtime**: All extensions use the same runtime instance from the main app
+4. **No Redundancy**: Each extension doesn't need its own copy of the runtime
+
+## Build Script for Extensions
+
+Example build script for extensions (place in `build/build-extensions.bat`):
+
+```batch
+@echo off
+REM Build all extensions to system folder
+REM Extensions are framework-dependent (no SelfContained)
+
+echo Building extensions...
+cd src\Extensions
+
+REM Build each extension
+for /d %%d in (*) do (
+    if exist "%%d\*.csproj" (
+        echo Building %%d...
+        dotnet build "%%d\*.csproj" -c Release -p:OutputPath=..\..\build\publish\system\
+    )
+)
+
+echo Extensions built to build\publish\system\
+```
+
+## Testing Extensions
+
+1. Build main app (self-contained): `.\build\build.bat Release`
+2. Build extensions (framework-dependent): Build to `system/` folder
+3. Run ClassicPanel.exe - it will load extensions from `system/` folder
+4. Extensions automatically use the runtime from the main app
+
+## Benefits of This Approach
+
+### File Size
+- **Self-contained extensions**: 100 × 120 MB = 12 GB ❌
+- **Framework-dependent extensions**: 120 MB + (100 × 500 KB avg) = ~170 MB ✅
+
+### Distribution
+- Single download with main app
+- Extensions are small and lightweight
+- Easy to update individual extensions
+
+### Performance
+- All extensions share the same runtime instance
+- No redundant runtime loading
+- Faster extension loading (no runtime initialization)
+
+### Compatibility
+- All extensions use the same .NET version (ensured by main app)
+- No version conflicts between extensions
+- Consistent behavior across all extensions
+
+## Important Notes
+
+1. **Main App Must Be Self-Contained**: The main ClassicPanel.exe MUST be self-contained because it provides the runtime
+2. **Extensions Must Match Framework**: Extensions must target the same .NET version as the main app
+3. **Runtime Identifier**: Both main app and extensions should use `win-x64` (or match)
+4. **Testing**: Always test extensions with the actual self-contained main app
+
+## Example: Creating a New Extension
+
+1. Create extension project in `src/Extensions/MyExtension/`
+2. Set `OutputType` to `Library` (DLL)
+3. **Do NOT** set `SelfContained=true`
+4. Configure build output to `system/` folder
+5. Build - extension will be small (no runtime included)
+6. Copy to `system/` folder next to ClassicPanel.exe
+7. Run ClassicPanel.exe - extension loads and uses main app's runtime
+
+## Troubleshooting
+
+### Extension fails to load
+- **Check**: Extension targets same .NET version as main app
+- **Check**: Extension is compiled for `win-x64`
+- **Check**: Extension is in `system/` folder next to ClassicPanel.exe
+
+### Extension shows error about missing .NET
+- **Cause**: Extension was built as self-contained (shouldn't be)
+- **Fix**: Rebuild extension without `SelfContained=true`
+
+### Multiple runtime versions conflict
+- **Cause**: Some extensions might have different .NET versions
+- **Fix**: Ensure all extensions target `net10.0-windows` (same as main app)
+
+## References
+
+- [.NET Framework-Dependent Deployments](https://learn.microsoft.com/dotnet/core/deploying/#framework-dependent-deployments)
+- [Self-Contained Deployments](https://learn.microsoft.com/dotnet/core/deploying/#self-contained-deployments)
+- [Extension Development Guide](cpl-extension-guide.md) (when created)
+

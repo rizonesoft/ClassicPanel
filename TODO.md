@@ -25,7 +25,7 @@ This document outlines the complete development roadmap from initial structure t
 - [x] Create build scripts (build.bat, build.sh)
 - [x] Configure build configurations (Debug, Release)
 - [x] Set up PublishSingleFile configuration
-- [ ] Configure extension projects to output to `system/` folder
+- [x] Configure extension projects to output to `system/` folder
 - [ ] Set up MSBuild targets for extension compilation
 - [ ] Create solution structure for main app + extensions
 - [x] Test ReadyToRun compilation (64-bit only)
@@ -39,14 +39,14 @@ This document outlines the complete development roadmap from initial structure t
 - [x] Create Resources folder structure
 - [x] Add application icon (Graphics/ClassicPanel.ico)
 - [ ] Create well-organized directory structure for extensions:
-  - [ ] `src/Extensions/` folder for CPL extension projects
+  - [x] `src/Extensions/` folder for CPL extension projects
   - [ ] Each extension in its own subfolder (e.g., `src/Extensions/SystemProperties/`)
   - [ ] Shared components in `src/Extensions/Shared/`
-  - [ ] Extension template/starter project
-- [ ] Configure build system to compile extensions to `system/` folder
-  - [ ] Extensions MUST be framework-dependent (NOT self-contained)
-  - [ ] Extensions use runtime from main ClassicPanel.exe
-  - [ ] See `docs/dev/extension-deployment.md` for details
+  - [x] Extension template/starter project
+- [x] Configure build system to compile extensions to `system/` folder
+  - [x] Extensions MUST be framework-dependent (NOT self-contained)
+  - [x] Extensions use runtime from main ClassicPanel.exe
+  - [x] See `docs/dev/extension-deployment.md` for details
 - [ ] Create application manifest
 - [ ] Set up version numbering system
 - [ ] Create constants/configuration class
