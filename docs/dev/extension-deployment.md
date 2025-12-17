@@ -62,12 +62,15 @@ ClassicPanel/
 ### Extensions
 - **Debug Build**: `build/debug/system/net10.0-windows/win-x64/ExtensionName.dll`
 - **Release Build**: `build/release/system/net10.0-windows/win-x64/ExtensionName.dll`
-- **Published**: `build/publish/system/net10.0-windows/win-x64/ExtensionName.dll`
 - **Type**: Framework-dependent DLLs
-- **Size**: Typically 50 KB - 5 MB each (depending on functionality)
+- **Size**: Typically 3 KB - 5 MB each (depending on functionality)
 - **Contains**: Extension code only (no runtime)
 
-**Note**: Extension output paths are automatically configured by `Directory.Build.props`. Projects in `src/Extensions/` are automatically detected and configured to output to the `system/` subfolder.
+**Note**: 
+- Extension output paths are automatically configured by `Directory.Build.props`
+- Projects in `src/Extensions/` are automatically detected and configured to output to the `system/` subfolder
+- Extensions are NOT published separately - they're framework-dependent DLLs that use the main app's runtime
+- For distribution, copy extension DLLs from `build/release/system/` to the `system/` folder next to the published `ClassicPanel.exe`
 
 ## Extension Project Template
 

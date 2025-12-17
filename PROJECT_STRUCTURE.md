@@ -32,7 +32,15 @@ src/
 │   └── MainWindow.Designer.cs    # Windows Forms designer file
 ├── Core/
 │   ├── CplInterop.cs             # P/Invoke definitions for Control Panel API
-│   └── CplLoader.cs              # CPL file loading and management
+│   ├── CplLoader.cs              # CPL file loading and management
+│   └── PlatformValidator.cs      # Platform validation (OS version, architecture)
+├── Extensions/                   # CPL extension projects
+│   ├── ExtensionTemplate/        # Extension template project
+│   │   ├── ExtensionTemplate.csproj
+│   │   ├── ExtensionTemplate.cs
+│   │   └── README.md
+│   └── Shared/                   # Shared components for extensions
+│       └── README.md
 └── Resources/
     └── App.ico                   # Application icon
 ```
@@ -50,7 +58,18 @@ build/
 │   └── net10.0-windows/win-x64/ # Framework/RID subdirectory
 │       └── ClassicPanel.exe      # ~290 KB
 ├── publish/                      # Published executables (shared, self-contained)
-│   └── ClassicPanel.exe          # ~122 MB (includes .NET runtime)
+│   ├── ClassicPanel.exe          # ~122 MB (includes .NET runtime)
+│   └── system/                   # Extension DLLs (framework-dependent)
+│       └── net10.0-windows/win-x64/
+│           └── ExtensionName.dll # ~3-5000 KB each
+├── debug/                        # Debug build output
+│   └── system/                   # Debug extension DLLs
+│       └── net10.0-windows/win-x64/
+│           └── ExtensionName.dll
+├── release/                      # Release build output
+│   └── system/                   # Release extension DLLs
+│       └── net10.0-windows/win-x64/
+│           └── ExtensionName.dll
 └── obj/                          # Intermediate build files
 ```
 

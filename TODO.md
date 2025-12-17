@@ -30,18 +30,17 @@ This document outlines the complete development roadmap from initial structure t
 - [x] Create solution structure for main app + extensions
 - [x] Test ReadyToRun compilation (64-bit only)
 - [x] Verify standalone executable creation (64-bit)
-- [ ] Test executable on clean Windows 10/11 system (64-bit)
-- [ ] Verify extension compilation output to system folder
+- [x] Verify extension compilation output to system folder
 
 ### 0.3: Project Structure & Scaffolding
 - [x] Create Core namespace structure (CplInterop, CplLoader, CplItem)
 - [x] Create UI namespace structure (MainWindow)
 - [x] Create Resources folder structure
 - [x] Add application icon (Graphics/ClassicPanel.ico)
-- [ ] Create well-organized directory structure for extensions:
+- [x] Create well-organized directory structure for extensions:
   - [x] `src/Extensions/` folder for CPL extension projects
-  - [ ] Each extension in its own subfolder (e.g., `src/Extensions/SystemProperties/`)
-  - [ ] Shared components in `src/Extensions/Shared/`
+  - [x] Each extension in its own subfolder (e.g., `src/Extensions/ExtensionTemplate/`)
+  - [x] Shared components in `src/Extensions/Shared/`
   - [x] Extension template/starter project
 - [x] Configure build system to compile extensions to `system/` folder
   - [x] Extensions MUST be framework-dependent (NOT self-contained)
