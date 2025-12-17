@@ -199,13 +199,20 @@ internal static class WindowsThemeInterop
             // If that fails, try Windows 10 API (DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19)
             if (result != 0)
             {
+                value = useDarkMode ? 1 : 0; // Reset value
                 result = DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ref value, cbAttribute);
             }
 
+            // If still failing, it might be that DWM composition is disabled or not supported
+            // Return true if either call succeeded
             return result == 0; // 0 = success (S_OK)
         }
-        catch
+        catch (Exception ex)
         {
+            // Log error in debug builds only
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"Failed to set title bar theme: {ex.Message}");
+            #endif
             return false;
         }
     }
