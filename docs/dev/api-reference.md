@@ -85,6 +85,45 @@ Manages localization and internationalization.
 **Events:**
 - `OnCultureChanged` - Raised when the culture changes
 
+### ThemeManager
+
+Manages application themes including light, dark, and system mode. Supports Windows accent colors.
+
+**Properties:**
+- `CurrentTheme` (string) - Gets or sets the current theme mode (Light, Dark, or System)
+- `CurrentThemeData` (ThemeData) - Gets the current theme data
+- `AccentColor` (Color) - Gets or sets the accent color
+
+**Methods:**
+- `Initialize()` - Initializes the theme manager and loads Windows accent color
+- `GetEffectiveTheme()` - Gets the effective theme (Light or Dark) based on current mode and system preference
+- `IsValidTheme(string)` - Checks if a theme name is valid
+- `RefreshAccentColor()` - Refreshes the accent color from Windows settings
+- `GetAvailableThemes()` - Gets all available theme modes
+
+**Events:**
+- `OnThemeChanged` - Raised when the theme changes
+
+### ThemeData
+
+Represents theme data including colors and styling information.
+
+**Properties:**
+- `Name` (string) - Theme name
+- `BackgroundColor` (Color) - Background color
+- `ForegroundColor` (Color) - Foreground (text) color
+- `AccentColor` (Color) - Accent color
+- `BorderColor` (Color) - Border color
+- `HoverBackgroundColor` (Color) - Hover background color
+- `SelectedBackgroundColor` (Color) - Selected background color
+- `DisabledForegroundColor` (Color) - Disabled foreground color
+- `ControlBackgroundColor` (Color) - Control background color
+- `ControlForegroundColor` (Color) - Control foreground color
+
+**Methods:**
+- `CreateLightTheme(Color)` - Creates a light theme data instance
+- `CreateDarkTheme(Color)` - Creates a dark theme data instance
+
 # API Reference
 
 ## Namespace: ClassicPanel.Core

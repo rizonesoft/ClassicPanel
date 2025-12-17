@@ -85,7 +85,7 @@ ClassicPanel/
 
 - **Build, publish, and test** - After each task: build Debug/Release for compilation checks. After completing a set of tasks: publish and test the published build (see Section 3: Build & Test)
 - **Review and update documentation** - Check if rules (`.cursor/rules/`), dev docs (`docs/dev/`), user docs (`docs/user/`), standards (`standards/`), and README files need updating based on changes made (see Section 4: Documentation Updates)
-- **Commit and push to GitHub** - After completing a set of tasks/changes, commit all changes with a proper commit message and push to GitHub (see Section 7: Git Commit & Push)
+- **Commit and push to GitHub** - **MANDATORY**: After completing a set of tasks/changes, commit all changes with a proper commit message and push to GitHub. This is always required. If push fails due to network issues, retry. See Section 7: Git Commit & Push
 
 ## Implementation Steps
 
@@ -218,7 +218,10 @@ dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p
 - [ ] Update task descriptions if needed
 - [ ] Save TODO.md
 
-### 7. Git Commit & Push
+### 7. Git Commit & Push (CRITICAL - Always Required)
+
+**MANDATORY**: After completing a set of tasks/changes, you MUST commit and push to GitHub. This is not optional.
+
 ```bash
 git add .
 git commit -m "feat: [Brief description of feature]
@@ -235,10 +238,18 @@ Closes: [GitHub issue if applicable]"
 
 git push origin main
 ```
+
+**If push fails (network error, etc.):**
+- Retry the push command
+- If it still fails, inform the user that the commit was successful but push failed
+- The user can manually push later with: `git push origin main`
+
+**Checklist:**
 - [ ] Commit message follows format from `standards/commit-messages.md`
 - [ ] All related files committed (code, tests, docs, TODO.md)
-- [ ] Changes pushed to GitHub
+- [ ] **Changes pushed to GitHub** (MANDATORY - retry if network fails)
 - [ ] Commit references TODO.md task (Phase: X.Y, Task: X.Y.Z)
+- [ ] Verify push succeeded: `git status` should show "Your branch is up to date with 'origin/main'"
 
 ## References & Resources
 

@@ -37,9 +37,13 @@ src/
 │   ├── VersionInfo.cs            # Version information from assembly
 │   ├── AppConstants.cs           # Application-wide constants
 │   ├── Category.cs                # Category enumeration and management
-│   └── Localization/              # Localization infrastructure
-│       ├── LocalizationManager.cs # Localization manager
-│       └── README.md              # Localization documentation
+│   ├── Localization/              # Localization infrastructure
+│   │   ├── LocalizationManager.cs # Localization manager
+│   │   └── README.md              # Localization documentation
+│   └── Theme/                     # Theme system infrastructure
+│       ├── ThemeManager.cs        # Theme manager (light/dark/system mode)
+│       ├── ThemeData.cs           # Theme data (colors and styling)
+│       └── WindowsThemeInterop.cs # Windows API interop for theme/accent colors
 │   └── PlatformValidator.cs      # Platform validation (OS version, architecture)
 ├── Extensions/                   # CPL extension projects
 │   ├── ExtensionTemplate/        # Extension template project

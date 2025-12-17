@@ -51,7 +51,7 @@ This document outlines the complete development roadmap from initial structure t
 - [x] Create constants/configuration class
 - [x] Create Category enumeration and management system
 - [x] Set up localization/internationalization infrastructure
-- [ ] Create theme system architecture
+- [x] Create theme system architecture (light/dark/system mode support, accent colors from Windows)
 - [ ] Design performance monitoring infrastructure
 - [ ] **Design UI Abstraction Layer** for multi-framework support:
   - [ ] Create `ClassicPanel.UI.Abstractions` project
@@ -446,18 +446,14 @@ This document outlines the complete development roadmap from initial structure t
 - [ ] Customizable keyboard shortcuts
 
 ### 4.16: Themes & Customization
-- [ ] Create theme system architecture
+- [x] Create theme system architecture (light/dark/system mode support, accent colors from Windows)
 - [ ] Implement light theme (default)
 - [ ] Implement dark theme
-- [ ] Implement high contrast theme (accessibility)
-- [ ] Support custom color schemes
-- [ ] Theme preview functionality
+- [ ] Implement system mode (follows Windows theme preference)
+- [ ] Use Windows accent colors (read from Windows settings)
 - [ ] Persist theme preference
-- [ ] Auto-detect Windows theme preference
-- [ ] Support accent color customization
-- [ ] Add transparency options
+- [ ] Auto-detect Windows theme preference (for system mode)
 - [ ] Implement smooth theme transitions
-- [ ] Create theme export/import
 
 ### 4.17: Animations & Transitions
 - [ ] Implement smooth fade-in/fade-out animations

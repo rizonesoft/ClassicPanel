@@ -98,6 +98,22 @@ dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p
 
 See `docs/dev/build-test-workflow.md` for detailed workflow recommendations.
 
+## Git Commit & Push Workflow
+
+**CRITICAL**: After completing a set of tasks/changes, you MUST commit and push to GitHub. This is mandatory, not optional.
+
+**Steps:**
+1. Stage all changes: `git add .`
+2. Commit with proper message following `standards/commit-messages.md`
+3. Push to GitHub: `git push origin main`
+4. If push fails (network error), retry the push command
+5. Verify success: `git status` should show "Your branch is up to date with 'origin/main'"
+
+**If push fails:**
+- Retry the push command
+- If it still fails, inform the user that the commit was successful but push failed
+- The user can manually push later with: `git push origin main`
+
 ## Remember
 - **ReadyToRun ENABLED** - Pre-compiles code for faster startup (full .NET compatibility)
 - **NO Native AOT** - ReadyToRun enabled for faster startup (full .NET compatibility, no trimming restrictions)

@@ -76,6 +76,9 @@ ClassicPanel is designed with a **plugin-based, multi-framework architecture** t
 - `AppConstants`: Application-wide constants and configuration values
 - `Category` / `CategoryHelper`: Category enumeration and management for organizing Control Panel items
 - `LocalizationManager`: Manages localization and internationalization
+- `ThemeManager`: Manages application themes (light/dark/system mode) with Windows accent colors
+- `ThemeData`: Represents theme color data and styling information
+- `WindowsThemeInterop`: P/Invoke definitions for reading Windows theme and accent color settings
 - `ExtensionManager`: Manages CPL extensions and plugins (future)
 - `FrameworkLoader`: Loads and manages UI framework implementations (future)
 

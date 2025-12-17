@@ -195,9 +195,9 @@ public static class AppConstants
     public const string DarkTheme = "Dark";
 
     /// <summary>
-    /// High contrast theme name.
+    /// System theme mode (follows Windows theme preference).
     /// </summary>
-    public const string HighContrastTheme = "HighContrast";
+    public const string SystemTheme = "System";
 
     #endregion
 
