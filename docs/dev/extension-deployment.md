@@ -92,28 +92,56 @@ ClassicPanel/
 3. **Shared Runtime**: All extensions use the same runtime instance from the main app
 4. **No Redundancy**: Each extension doesn't need its own copy of the runtime
 
-## Build Script for Extensions
+## Building Extensions with MSBuild Targets
 
-Example build script for extensions (place in `build/build-extensions.bat`):
+MSBuild targets are automatically configured in `Directory.Build.targets` to discover and build all extensions.
 
-```batch
-@echo off
-REM Build all extensions to system folder
-REM Extensions are framework-dependent (no SelfContained)
+### Automatic Extension Building
 
-echo Building extensions...
-cd src\Extensions
+Extensions are **automatically built** when you build the main application:
 
-REM Build each extension
-for /d %%d in (*) do (
-    if exist "%%d\*.csproj" (
-        echo Building %%d...
-        dotnet build "%%d\*.csproj" -c Release -p:OutputPath=..\..\build\publish\system\
-    )
-)
-
-echo Extensions built to build\publish\system\
+```bash
+cd src
+dotnet build -c Release -p:GenerateAssemblyInfo=false
+# Extensions are automatically discovered and built
 ```
+
+### Building Extensions Independently
+
+You can build extensions independently using MSBuild targets:
+
+```bash
+cd src
+
+# Build all extensions (Debug)
+dotnet build -t:BuildExtensions -c Debug -p:GenerateAssemblyInfo=false
+
+# Build all extensions (Release)
+dotnet build -t:BuildExtensions -c Release -p:GenerateAssemblyInfo=false
+
+# Clean all extensions
+dotnet build -t:CleanExtensions -c Release -p:GenerateAssemblyInfo=false
+
+# Rebuild all extensions
+dotnet build -t:RebuildExtensions -c Release -p:GenerateAssemblyInfo=false
+
+# Publish all extensions
+dotnet build -t:PublishExtensions -c Release -p:GenerateAssemblyInfo=false
+```
+
+### Available Targets
+
+- **`BuildExtensions`**: Builds all discovered extension projects
+- **`CleanExtensions`**: Cleans all extension projects
+- **`RebuildExtensions`**: Rebuilds all extension projects
+- **`PublishExtensions`**: Publishes all extension projects (framework-dependent)
+
+### How It Works
+
+1. **Discovery**: MSBuild automatically discovers all `.csproj` files in `src/Extensions/`
+2. **Automatic Building**: When building the main app, extensions are built automatically
+3. **Output Location**: Extensions output to `system/` subfolder (configured in `Directory.Build.props`)
+4. **Framework-Dependent**: All extensions are built as framework-dependent (not self-contained)
 
 ## Testing Extensions
 

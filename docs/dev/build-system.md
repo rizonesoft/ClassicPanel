@@ -246,14 +246,27 @@ Extension projects are automatically configured by `Directory.Build.props`:
 
 ### Building Extensions
 
+Extensions are automatically built when building the main application. MSBuild targets in `Directory.Build.targets` automatically discover and build all extensions.
+
 ```bash
+# Build main app + extensions (automatic)
+cd src
+dotnet build -c Release -p:GenerateAssemblyInfo=false
+# Extensions are automatically discovered and built
+
+# Build extensions independently
+dotnet build -t:BuildExtensions -c Release -p:GenerateAssemblyInfo=false
+
 # Build a specific extension
 cd src/Extensions/ExtensionName
 dotnet build -c Release -p:GenerateAssemblyInfo=false
-
-# Build all extensions (when build script is created)
-.\build\build-extensions.bat
 ```
+
+**Available Extension Targets:**
+- `BuildExtensions` - Build all extensions
+- `CleanExtensions` - Clean all extensions
+- `RebuildExtensions` - Rebuild all extensions
+- `PublishExtensions` - Publish all extensions
 
 See [Extension Deployment Guide](extension-deployment.md) for detailed information on building extensions.
 

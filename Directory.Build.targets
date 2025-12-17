@@ -1,0 +1,140 @@
+<Project>
+  <!--
+    MSBuild Targets for Extension Compilation
+    
+    This file provides targets to automatically discover and build all extension projects.
+    Extensions are automatically built when the main application is built, or can be
+    built independently using the BuildExtensions target.
+  -->
+
+  <PropertyGroup>
+    <!-- Extension projects directory -->
+    <ExtensionsDirectory>$(MSBuildThisFileDirectory)src\Extensions</ExtensionsDirectory>
+    
+    <!-- Pattern to find extension project files -->
+    <ExtensionProjectPattern>$(ExtensionsDirectory)\**\*.csproj</ExtensionProjectPattern>
+  </PropertyGroup>
+
+  <!--
+    Target: DiscoverExtensionProjects
+    Discovers all extension projects in src/Extensions/
+  -->
+  <Target Name="DiscoverExtensionProjects" BeforeTargets="Build">
+    <ItemGroup>
+      <ExtensionProjects Include="$(ExtensionProjectPattern)" />
+    </ItemGroup>
+    
+    <!-- Log discovered extensions -->
+    <Message Text="Discovered extension project(s):" Importance="normal" Condition="'@(ExtensionProjects)' != ''" />
+    <Message Text="  - %(ExtensionProjects.Identity)" Importance="normal" Condition="'@(ExtensionProjects)' != ''" />
+  </Target>
+
+  <!--
+    Target: BuildExtensions
+    Builds all discovered extension projects.
+    Can be invoked independently: dotnet build -t:BuildExtensions
+  -->
+  <Target Name="BuildExtensions" DependsOnTargets="DiscoverExtensionProjects">
+    <Message Text="Building extensions..." Importance="high" />
+    
+    <MSBuild 
+      Projects="@(ExtensionProjects)"
+      Targets="Build"
+      Properties="Configuration=$(Configuration);GenerateAssemblyInfo=false"
+      Condition="'@(ExtensionProjects)' != ''"
+      ContinueOnError="false" />
+    
+    <Message Text="Extensions build completed" Importance="high" Condition="'@(ExtensionProjects)' != ''" />
+    <Message Text="No extensions found to build" Importance="normal" Condition="'@(ExtensionProjects)' == ''" />
+  </Target>
+
+  <!--
+    Target: CleanExtensions
+    Cleans all extension projects.
+    Can be invoked independently: dotnet build -t:CleanExtensions
+  -->
+  <Target Name="CleanExtensions" DependsOnTargets="DiscoverExtensionProjects">
+    <Message Text="Cleaning extensions..." Importance="high" />
+    
+    <MSBuild 
+      Projects="@(ExtensionProjects)"
+      Targets="Clean"
+      Properties="Configuration=$(Configuration);GenerateAssemblyInfo=false"
+      Condition="'@(ExtensionProjects)' != ''"
+      ContinueOnError="false" />
+    
+    <Message Text="Extensions clean completed" Importance="high" Condition="'@(ExtensionProjects)' != ''" />
+    <Message Text="No extensions found to clean" Importance="normal" Condition="'@(ExtensionProjects)' == ''" />
+  </Target>
+
+  <!--
+    Target: RebuildExtensions
+    Rebuilds all extension projects.
+    Can be invoked independently: dotnet build -t:RebuildExtensions
+  -->
+  <Target Name="RebuildExtensions" DependsOnTargets="DiscoverExtensionProjects">
+    <Message Text="Rebuilding extensions..." Importance="high" />
+    
+    <MSBuild 
+      Projects="@(ExtensionProjects)"
+      Targets="Rebuild"
+      Properties="Configuration=$(Configuration);GenerateAssemblyInfo=false"
+      Condition="'@(ExtensionProjects)' != ''"
+      ContinueOnError="false" />
+    
+    <Message Text="Extensions rebuild completed" Importance="high" Condition="'@(ExtensionProjects)' != ''" />
+    <Message Text="No extensions found to rebuild" Importance="normal" Condition="'@(ExtensionProjects)' == ''" />
+  </Target>
+
+  <!--
+    Target: PublishExtensions
+    Publishes all extension projects (framework-dependent, not self-contained).
+    Can be invoked independently: dotnet build -t:PublishExtensions
+  -->
+  <Target Name="PublishExtensions" DependsOnTargets="DiscoverExtensionProjects">
+    <Message Text="Publishing extensions..." Importance="high" />
+    
+    <MSBuild 
+      Projects="@(ExtensionProjects)"
+      Targets="Publish"
+      Properties="Configuration=$(Configuration);GenerateAssemblyInfo=false"
+      Condition="'@(ExtensionProjects)' != ''"
+      ContinueOnError="false" />
+    
+    <Message Text="Extensions publish completed" Importance="high" Condition="'@(ExtensionProjects)' != ''" />
+    <Message Text="No extensions found to publish" Importance="normal" Condition="'@(ExtensionProjects)' == ''" />
+  </Target>
+
+  <!--
+    Target: BuildAll (Main app + Extensions)
+    Builds the main application and all extensions together.
+    This is the default behavior when building from the solution root.
+  -->
+  <Target Name="BuildAll" DependsOnTargets="Build;BuildExtensions">
+    <Message Text="Build all (main app + extensions) completed" Importance="high" />
+  </Target>
+
+  <!--
+    Automatically build extensions after main app build (if not main app project)
+    This ensures extensions are built when building from solution or when main app builds
+  -->
+  <Target Name="BuildExtensionsAfterMain" AfterTargets="Build" Condition="'$(IsExtensionProject)' != 'true'">
+    <CallTarget Targets="BuildExtensions" />
+  </Target>
+
+  <!--
+    Automatically clean extensions when cleaning main app
+  -->
+  <Target Name="CleanExtensionsAfterMain" AfterTargets="Clean" Condition="'$(IsExtensionProject)' != 'true'">
+    <CallTarget Targets="CleanExtensions" />
+  </Target>
+
+  <!--
+    Automatically rebuild extensions when rebuilding main app
+  -->
+  <Target Name="RebuildExtensionsAfterMain" AfterTargets="Rebuild" Condition="'$(IsExtensionProject)' != 'true'">
+    <CallTarget Targets="RebuildExtensions" />
+  </Target>
+
+</Project>
+
