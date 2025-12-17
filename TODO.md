@@ -6,31 +6,30 @@ This document outlines the complete development roadmap from initial structure t
 
 ### 0.1: Repository Setup
 - [x] Create directory structure (src, build, resources, docs, standards, prompts)
-- [x] Create .NET 10 project file with Native AOT configuration
+- [x] Create .NET 10 project file with ReadyToRun configuration
 - [x] Initialize Git repository
 - [x] Create .gitignore for .NET projects
 - [x] Create README.md with project overview
-- [ ] Set up GitHub repository
-- [ ] Configure branch protection rules
-- [ ] Set up issue templates
-- [ ] Create initial commit and push to GitHub
+- [x] Set up GitHub repository
+- [x] Set up issue templates
+- [x] Create initial commit and push to GitHub
 
 ### 0.2: Build System Configuration
-- [x] Create ClassicPanel.csproj with Native AOT settings
-- [ ] **Target Platform Requirements**:
-  - [ ] Set target OS to Windows 10 and Windows 11 only (no Windows 7/8 support)
-  - [ ] Configure build for 64-bit (x64) only (no 32-bit support - future standard)
-  - [ ] Set RuntimeIdentifier to `win-x64` in all projects
-  - [ ] Update .csproj to enforce Windows 10+ requirement
-  - [ ] Add platform validation on startup (check OS version, architecture)
-- [ ] Create build scripts (build.bat, build.sh)
-- [ ] Configure build configurations (Debug, Release)
-- [ ] Set up PublishSingleFile configuration
+- [x] Create ClassicPanel.csproj with ReadyToRun settings
+- [x] **Target Platform Requirements**:
+  - [x] Set target OS to Windows 10 and Windows 11 only (no Windows 7/8 support)
+  - [x] Configure build for 64-bit (x64) only (no 32-bit support - future standard)
+  - [x] Set RuntimeIdentifier to `win-x64` in all projects
+  - [x] Update .csproj to enforce Windows 10+ requirement
+  - [x] Add platform validation on startup (check OS version, architecture)
+- [x] Create build scripts (build.bat, build.sh)
+- [x] Configure build configurations (Debug, Release)
+- [x] Set up PublishSingleFile configuration
 - [ ] Configure extension projects to output to `system/` folder
 - [ ] Set up MSBuild targets for extension compilation
 - [ ] Create solution structure for main app + extensions
-- [ ] Test Native AOT compilation (64-bit only)
-- [ ] Verify standalone executable creation (64-bit)
+- [x] Test ReadyToRun compilation (64-bit only)
+- [x] Verify standalone executable creation (64-bit)
 - [ ] Test executable on clean Windows 10/11 system (64-bit)
 - [ ] Verify extension compilation output to system folder
 
@@ -45,6 +44,9 @@ This document outlines the complete development roadmap from initial structure t
   - [ ] Shared components in `src/Extensions/Shared/`
   - [ ] Extension template/starter project
 - [ ] Configure build system to compile extensions to `system/` folder
+  - [ ] Extensions MUST be framework-dependent (NOT self-contained)
+  - [ ] Extensions use runtime from main ClassicPanel.exe
+  - [ ] See `docs/dev/extension-deployment.md` for details
 - [ ] Create application manifest
 - [ ] Set up version numbering system
 - [ ] Create constants/configuration class
@@ -1634,7 +1636,7 @@ This document outlines the complete development roadmap from initial structure t
 - **Feature Rich**: Rich features without bloat
 - **Framework Choice**: Use C++ when performance-critical, C# for UI and rapid development
 - **Performance**: Prioritize speed and responsiveness
-- **Native AOT**: Ensure compatibility where applicable
+- **ReadyToRun**: Pre-compiled for fast startup, full .NET compatibility maintained
 
 ### Common Requirements for All Extensions
 - [ ] Create extension project in `src/Extensions/[ExtensionName]/`
