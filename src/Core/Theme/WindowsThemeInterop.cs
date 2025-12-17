@@ -59,6 +59,22 @@ internal static class WindowsThemeInterop
 
     #endregion
 
+    #region DWM (Desktop Window Manager) API
+
+    [DllImport("dwmapi.dll", SetLastError = true)]
+    private static extern int DwmSetWindowAttribute(
+        nint hwnd,
+        int dwAttribute,
+        nint pvAttribute,
+        int cbAttribute);
+
+    // DWMWA_USE_IMMERSIVE_DARK_MODE = 20 (Windows 11)
+    // DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19 (Windows 10)
+    private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+    private const int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
+
+    #endregion
+
     /// <summary>
     /// Gets the Windows apps theme preference (light or dark).
     /// </summary>
@@ -159,6 +175,40 @@ internal static class WindowsThemeInterop
         }
 
         return requestedMode;
+    }
+
+    /// <summary>
+    /// Sets the window title bar theme (light or dark) using DWM.
+    /// </summary>
+    /// <param name="hwnd">Window handle.</param>
+    /// <param name="useDarkMode">True to use dark mode, false for light mode.</param>
+    /// <returns>True if successful; otherwise, false.</returns>
+    internal static bool SetWindowTitleBarTheme(nint hwnd, bool useDarkMode)
+    {
+        if (hwnd == nint.Zero)
+            return false;
+
+        try
+        {
+            int value = useDarkMode ? 1 : 0;
+            nint pvAttribute = (nint)value;
+            int cbAttribute = sizeof(int);
+
+            // Try Windows 11 API first (DWMWA_USE_IMMERSIVE_DARK_MODE = 20)
+            int result = DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, pvAttribute, cbAttribute);
+            
+            // If that fails, try Windows 10 API (DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19)
+            if (result != 0)
+            {
+                result = DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, pvAttribute, cbAttribute);
+            }
+
+            return result == 0; // 0 = success
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 

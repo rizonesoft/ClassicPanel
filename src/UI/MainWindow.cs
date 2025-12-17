@@ -1,5 +1,7 @@
+using ClassicPanel.Core;
 using ClassicPanel.Core.Performance;
 using ClassicPanel.Core.Theme;
+using static ClassicPanel.Core.Theme.WindowsThemeInterop;
 
 namespace ClassicPanel.UI;
 
@@ -18,8 +20,19 @@ public partial class MainWindow : Form
     {
         base.OnLoad(e);
         
+        // Apply title bar theme now that handle is created
+        ApplyTheme();
+        
         // Mark startup complete when window is loaded
         PerformanceMonitor.MarkStartupComplete();
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        
+        // Apply title bar theme when handle is created
+        ApplyTheme();
     }
 
     /// <summary>
@@ -28,10 +41,18 @@ public partial class MainWindow : Form
     private void ApplyTheme()
     {
         var theme = ThemeManager.CurrentThemeData;
+        var effectiveTheme = ThemeManager.GetEffectiveTheme();
+        bool isDarkMode = string.Equals(effectiveTheme, AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
         
         // Apply theme to form
         this.BackColor = theme.BackgroundColor;
         this.ForeColor = theme.ForegroundColor;
+        
+        // Apply dark mode to title bar (non-client area)
+        if (this.IsHandleCreated)
+        {
+            SetWindowTitleBarTheme(this.Handle, isDarkMode);
+        }
         
         // Apply theme to all controls
         ApplyThemeToControls(this, theme);
