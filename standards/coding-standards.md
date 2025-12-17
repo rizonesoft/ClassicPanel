@@ -4,7 +4,7 @@
 - **Language**: C# 14
 - **Framework**: .NET 10 (LTS)
 - **UI Framework**: Windows Forms (WinForms)
-- **Compilation**: Native AOT (Ahead-of-Time)
+- **Compilation**: ReadyToRun (Pre-compiled for faster startup, full .NET compatibility)
 
 ## Code Style
 
@@ -95,12 +95,11 @@ ClassicPanel
 
 ## Performance
 
-### Native AOT Considerations
-- Avoid reflection where possible (some reflection is supported but limited)
-- Use `NativeLibrary.Load` instead of `[DllImport]` for dynamic loading
-- Prefer value types over reference types when appropriate
-- Avoid dynamic types
-- Test thoroughly with Native AOT builds
+### Build Considerations
+- Use `NativeLibrary.Load` instead of `[DllImport]` for dynamic loading (already implemented)
+- Prefer value types over reference types when appropriate for performance
+- Test Release builds with ReadyToRun to verify functionality and startup performance
+- Full .NET compatibility - ReadyToRun maintains full support for reflection and dynamic types
 
 ### UI Performance
 - Avoid blocking the UI thread
@@ -144,7 +143,7 @@ ClassicPanel
 - Test with real .cpl files
 - Test on clean Windows systems
 - Test on Windows 10 and Windows 11
-- Test with Native AOT builds
+- Test with Release builds (self-contained single file)
 
 ## Version Control
 
@@ -175,5 +174,5 @@ ClassicPanel
 - [.NET 10 Documentation](https://learn.microsoft.com/dotnet/)
 - [C# 14 Language Reference](https://learn.microsoft.com/dotnet/csharp/)
 - [WinForms Documentation](https://learn.microsoft.com/dotnet/desktop/winforms/)
-- [Native AOT Deployment](https://learn.microsoft.com/dotnet/core/deploying/native-aot/)
+- [.NET Deployment](https://learn.microsoft.com/dotnet/core/deploying/)
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-ClassicPanel is a Windows Forms application built with .NET 10 and C# 14, compiled with Native AOT. It replicates the classic Windows Control Panel interface by dynamically loading and executing Control Panel applets (.cpl files).
+ClassicPanel is a Windows Forms application built with .NET 10 and C# 14. It replicates the classic Windows Control Panel interface by dynamically loading and executing Control Panel applets (.cpl files).
 
 ## Technology Stack
 
@@ -10,7 +10,7 @@ ClassicPanel is a Windows Forms application built with .NET 10 and C# 14, compil
 - **.NET 10** (LTS) - Runtime and base libraries
 - **C# 14** - Programming language
 - **Windows Forms** - UI framework (default)
-- **Native AOT** - Ahead-of-time compilation for standalone executables
+- **ReadyToRun** - Pre-compiled code for faster startup with full .NET compatibility
 - **P/Invoke** - Interop with Windows Control Panel API
 
 ### Supported Alternative Frameworks
@@ -47,7 +47,7 @@ ClassicPanel is designed with a **plugin-based, multi-framework architecture** t
 **WinForms Implementation** (`ClassicPanel.UI.WinForms`):
 - Default UI implementation using Windows Forms
 - Implements all UI abstraction interfaces
-- Native AOT compatible
+- ReadyToRun compatible (full .NET compatibility, no AOT restrictions)
 
 **WPF Implementation** (`ClassicPanel.UI.WPF`) - Optional:
 - Alternative UI implementation using WPF
@@ -229,12 +229,44 @@ Settings are stored in a JSON file (location TBD):
 - Window position/size
 - Last used folder paths
 
-## Native AOT Considerations
+## Platform Requirements
 
-- **Dynamic Loading**: Use `NativeLibrary` instead of `[DllImport]`
-- **Limited Reflection**: Some reflection features unavailable
-- **No Dynamic Types**: Cannot use `dynamic`
-- **Testing**: Must test with AOT builds, not just regular builds
+ClassicPanel has strict platform requirements enforced at both build-time and runtime:
+
+### Operating System
+- **Windows 10** (build 10240 or later) - Minimum supported version
+- **Windows 11** (build 22000 or later) - Fully supported
+- **Unsupported**: Windows 7, Windows 8, Windows 8.1
+
+### Architecture
+- **64-bit (x64) only** - No 32-bit support
+- RuntimeIdentifier: `win-x64`
+
+### Platform Validation
+
+The `PlatformValidator` class performs runtime validation on application startup:
+1. Checks that the OS is Windows
+2. Verifies architecture is x64
+3. Validates Windows version is 10 or 11
+4. Shows user-friendly error messages if requirements aren't met
+5. Exits gracefully if platform is unsupported
+
+Platform validation runs in `Program.Main()` before any other initialization.
+
+### Build-Time Enforcement
+
+The project file enforces platform requirements:
+- `WindowsTargetPlatformVersion`: Set to Windows 10 SDK version
+- `SupportedOSPlatform`: Set to `windows10.0.10240`
+- `RuntimeIdentifier`: Set to `win-x64`
+
+## Build Considerations
+
+- **ReadyToRun Enabled**: Code is pre-compiled to native format for faster startup
+- **Dynamic Loading**: Use `NativeLibrary` instead of `[DllImport]` for dynamic loading (already implemented)
+- **Full Reflection Support**: All reflection features work normally (ReadyToRun compatible)
+- **Full .NET Compatibility**: ReadyToRun maintains full compatibility - no restrictions on language features
+- **Testing**: Test Release builds with ReadyToRun to verify functionality and startup performance
 
 ## Future Enhancements
 
@@ -248,5 +280,5 @@ Settings are stored in a JSON file (location TBD):
 
 - [Windows Control Panel Applications](https://learn.microsoft.com/windows/win32/shell/control-panel-applications)
 - [P/Invoke Documentation](https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke)
-- [Native AOT Deployment](https://learn.microsoft.com/dotnet/core/deploying/native-aot/)
+- [.NET Deployment](https://learn.microsoft.com/dotnet/core/deploying/)
 

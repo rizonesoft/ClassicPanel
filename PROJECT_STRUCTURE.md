@@ -25,7 +25,7 @@ ClassicPanel/
 
 ```
 src/
-├── ClassicPanel.csproj           # .NET 10 project file (Native AOT)
+├── ClassicPanel.csproj           # .NET 10 project file (ReadyToRun enabled)
 ├── Program.cs                    # Application entry point
 ├── UI/
 │   ├── MainWindow.cs             # Main window class
@@ -43,8 +43,15 @@ src/
 build/
 ├── build.bat                     # Build script (Windows)
 ├── installer/                    # InnoSetup installer scripts
-├── debug/                        # Debug build output
-└── release/                      # Release build output
+├── release/                      # Release build output (lowercase)
+│   └── net10.0-windows/win-x64/ # Framework/RID subdirectory
+│       └── ClassicPanel.exe      # ~290 KB
+├── debug/                        # Debug build output (lowercase)
+│   └── net10.0-windows/win-x64/ # Framework/RID subdirectory
+│       └── ClassicPanel.exe      # ~290 KB
+├── publish/                      # Published executables (shared, self-contained)
+│   └── ClassicPanel.exe          # ~122 MB (includes .NET runtime)
+└── obj/                          # Intermediate build files
 ```
 
 ## Resources (`resources/`)
@@ -96,7 +103,7 @@ prompts/
 ## Key Files
 
 ### Project Configuration
-- **`src/ClassicPanel.csproj`**: .NET 10 project with Native AOT enabled
+- **`src/ClassicPanel.csproj`**: .NET 10 project with ReadyToRun enabled
 - **`.gitignore`**: Git ignore rules for .NET projects
 
 ### Documentation
@@ -111,7 +118,7 @@ prompts/
 - **.NET 10** (LTS)
 - **C# 14**
 - **Windows Forms** (WinForms)
-- **Native AOT** (Ahead-of-Time compilation)
+- **ReadyToRun** (Pre-compiled for fast startup, full .NET compatibility maintained)
 - **P/Invoke** (Platform Invocation Services)
 
 ## Development Workflow

@@ -19,7 +19,9 @@ git clone https://github.com/yourusername/ClassicPanel.git
 cd ClassicPanel
 ```
 
-### 2. Verify .NET 10 Installation
+### 2. Verify .NET 10 SDK Installation (For Development Only)
+
+**Note**: This is for DEVELOPERS only. End users do NOT need to install .NET - the runtime is included in the distributed executable.
 
 ```bash
 dotnet --version
@@ -83,24 +85,40 @@ ClassicPanel/
 ### Using Command Line
 
 ```bash
-# Build
-dotnet build -c Release
+# Build all configurations
+dotnet build -c Debug -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Run
+# Run (uses Debug by default)
 dotnet run
 
-# Publish (Native AOT)
-dotnet publish -c Release -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+# Publish (Self-Contained Single File with ReadyToRun)
+dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+
+# Run specific builds
+.\build\debug\net10.0-windows\win-x64\ClassicPanel.exe
+.\build\release\net10.0-windows\win-x64\ClassicPanel.exe
+.\build\publish\ClassicPanel.exe
 ```
 
-## Native AOT Considerations
+**Build Outputs:**
+- Debug: `build/debug/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
+- Release: `build/release/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
+- Published: `build/publish/ClassicPanel.exe` (~122 MB, self-contained)
 
-Since ClassicPanel uses Native AOT compilation:
+Or use the build script:
+```bash
+.\build\build.bat Release
+```
 
-- **Avoid reflection** where possible (some reflection is supported but limited)
-- **Test with AOT builds** regularly: `dotnet publish -c Release`
-- **Use NativeLibrary** for dynamic loading instead of `[DllImport]`
-- Some .NET features may not be available in AOT mode
+## Build Considerations
+
+Since ClassicPanel uses ReadyToRun compilation:
+
+- **Full .NET Compatibility**: All features work, including reflection and dynamic types
+- **ReadyToRun Enabled**: Pre-compiles code for faster startup while maintaining full compatibility
+- **Test Release builds** regularly: `.\build\build.bat Release`
+- **Use NativeLibrary** for dynamic loading instead of `[DllImport]` (we use this for .cpl files)
 
 ## Testing with Control Panel Applets
 

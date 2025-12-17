@@ -83,16 +83,36 @@ public class CplLoaderTests
 2. Test with known .cpl files (e.g., `appwiz.cpl`, `desk.cpl`)
 3. Test error cases (corrupted files, missing exports)
 
-## Native AOT Testing
+## Release Build Testing
 
-**Important**: Test with Native AOT builds, not just regular builds.
+**Important**: Always test with all builds, especially the published build before releases.
 
 ```bash
-dotnet publish -c Release
-# Test the published executable
+cd src
+
+# Build all configurations
+dotnet build -c Debug -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
+
+# Publish self-contained executable
+dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+
+# Test Debug build
+.\build\debug\net10.0-windows\win-x64\ClassicPanel.exe
+
+# Test Release build
+.\build\release\net10.0-windows\win-x64\ClassicPanel.exe
+
+# Test Published build (MOST IMPORTANT - this is what users get)
+.\build\publish\ClassicPanel.exe
 ```
 
-Some features may work in regular builds but fail in AOT builds.
+**Build Locations:**
+- Debug: `build/debug/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
+- Release: `build/release/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
+- Published: `build/publish/ClassicPanel.exe` (~122 MB, self-contained with ReadyToRun)
+
+The published build creates a self-contained single-file executable with ReadyToRun that matches the distribution build. ReadyToRun pre-compiles code for faster startup.
 
 ## Test Checklist
 
@@ -102,7 +122,7 @@ Before committing:
 - [ ] Integration tests pass
 - [ ] Manual testing on Windows 10
 - [ ] Manual testing on Windows 11
-- [ ] Test with Native AOT build
+- [ ] Test with Release build (self-contained single file with ReadyToRun)
 - [ ] Test error cases
 - [ ] Test with various .cpl files
 

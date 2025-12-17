@@ -20,7 +20,9 @@ Welcome to the ClassicPanel developer documentation. This section contains techn
 ### Development Guides
 - [Getting Started](getting-started.md) - Initial setup and first steps
 - [CPL Interop Guide](cpl-interop.md) - Control Panel interop implementation
-- [Native AOT Guide](native-aot.md) - Native AOT compilation considerations
+- [Deployment Explained](deployment-explained.md) - Understanding self-contained vs ReadyToRun
+- [Performance Comparison](performance-comparison.md) - Self-contained vs framework-dependent performance analysis
+- [Extension Deployment](extension-deployment.md) - Building framework-dependent extensions (IMPORTANT: Extensions do NOT use self-contained)
 
 ## Standards
 
@@ -57,6 +59,6 @@ ClassicPanel/
 - [.NET 10 Documentation](https://learn.microsoft.com/dotnet/)
 - [C# 14 Language Reference](https://learn.microsoft.com/dotnet/csharp/)
 - [WinForms Documentation](https://learn.microsoft.com/dotnet/desktop/winforms/)
-- [Native AOT Deployment](https://learn.microsoft.com/dotnet/core/deploying/native-aot/)
+- [.NET Deployment](https://learn.microsoft.com/dotnet/core/deploying/)
 - [Windows Control Panel API](https://learn.microsoft.com/windows/win32/shell/control-panel-applications)
 

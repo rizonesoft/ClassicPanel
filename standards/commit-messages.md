@@ -111,7 +111,7 @@ polish(ui): improve MainWindow layout and styling
 
 ### Build
 ```
-build: configure Native AOT publish settings
+build: configure self-contained publish settings
 
 - Set PublishSingleFile=true
 - Configure IncludeNativeLibrariesForSelfExtract

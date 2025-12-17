@@ -147,6 +147,39 @@ Scans the `system/` folder next to the executable and loads all .cpl files found
 
 ---
 
+### PlatformValidator
+
+Validates that the runtime platform meets ClassicPanel's requirements.
+
+#### Methods
+
+**ValidatePlatform**
+```csharp
+public static bool ValidatePlatform()
+```
+Validates that the current platform meets ClassicPanel requirements:
+- Operating system is Windows
+- Architecture is x64 (64-bit)
+- Windows version is 10 (build 10240+) or 11 (build 22000+)
+
+**Returns**: `true` if platform is valid
+
+**Behavior**: 
+- If platform is invalid, shows a user-friendly error message dialog and exits the application
+- Should be called at application startup before any other initialization
+
+**Example**:
+```csharp
+static void Main()
+{
+    PlatformValidator.ValidatePlatform(); // Exits if requirements not met
+    ApplicationConfiguration.Initialize();
+    Application.Run(new MainWindow());
+}
+```
+
+---
+
 ## Namespace: ClassicPanel.UI
 
 ### MainWindow

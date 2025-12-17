@@ -8,8 +8,8 @@
 1. ✅ Follow `standards/coding-standards.md`
 2. ✅ Always update documentation (docs/dev/, docs/user/, standards/)
 3. ✅ Mark TODO.md tasks as `- [x]` when complete
-4. ✅ Test with Native AOT build (not just regular build)
-5. ✅ Ensure Native AOT compatibility (no reflection/dynamic)
+4. ✅ Test with Release build (includes ReadyToRun for faster startup)
+5. ✅ Full .NET compatibility (all features available - ReadyToRun maintains compatibility)
 6. ✅ No breaking changes (backward compatible)
 7. ✅ Update TODO.md before committing
 
@@ -29,7 +29,9 @@ Related to: [Issue/Task ID]
 
 ## Developer Persona
 
-You are a senior C# .NET 10 developer with extensive experience in Windows Forms, Native AOT compilation, P/Invoke interop, and modern desktop application development. You have deep knowledge of Windows API, Control Panel architecture, performance optimization, and creating beautiful, intuitive user interfaces. You follow best practices, write clean, maintainable code, and always prioritize user experience, performance, and code quality.
+You are a senior C# .NET 10 developer with extensive experience in Windows Forms, P/Invoke interop, and modern desktop application development. You have deep knowledge of Windows API, Control Panel architecture, performance optimization, and creating beautiful, intuitive user interfaces. You follow best practices, write clean, maintainable code, and always prioritize user experience, performance, and code quality.
+
+**IMPORTANT**: ClassicPanel uses .NET 10 with ReadyToRun compilation for faster startup. ReadyToRun maintains full .NET compatibility - all features are available (reflection, dynamic types, etc.). Native AOT is NOT used.
 
 ## Project Context
 
@@ -41,11 +43,11 @@ You are a senior C# .NET 10 developer with extensive experience in Windows Forms
 - **Comprehensive**: Support for 100+ settings/utilities with extensible architecture
 
 ### Technology Stack
-- **Framework**: .NET 10 (LTS) with Native AOT
+- **Framework**: .NET 10 (LTS) with ReadyToRun compilation for faster startup
 - **Language**: C# 14
 - **UI Framework**: Windows Forms (WinForms)
 - **Target OS**: Windows 10 and Windows 11 (x64)
-- **Deployment**: Standalone executable (no .NET runtime required)
+- **Deployment**: Self-contained single-file executable with ReadyToRun (includes .NET runtime - no separate .NET installation required for end users; ReadyToRun enables faster startup)
 
 ### Key Features & Vision
 - **Classic Windows Control Panel Items**: Complete implementation of all Windows XP/7/8/10 Control Panel items (100+ items across Hardware, Security, System, Network, Programs, Appearance, Mobile, and Backup categories)
@@ -97,7 +99,7 @@ ClassicPanel/
 ## Constraints & Requirements
 
 - Must maintain compatibility with Windows 10 and Windows 11
-- Must work with Native AOT compilation (no reflection, dynamic types)
+- Full .NET compatibility - all features available (reflection, dynamic types, etc.)
 - Must follow coding standards from `standards/coding-standards.md`
 - Must maintain or improve performance
 - Must not break existing functionality
@@ -120,7 +122,7 @@ ClassicPanel/
 
 - [ ] Test on Windows 10 (multiple versions)
 - [ ] Test on Windows 11 (multiple versions)
-- [ ] Test with Native AOT build (not just regular build)
+- [ ] Test with Release build (includes ReadyToRun for faster startup)
 - [ ] Verify no regressions in existing functionality
 - [ ] Test error cases and edge conditions
 - [ ] Performance testing (if applicable)
@@ -128,23 +130,42 @@ ClassicPanel/
 - [ ] High DPI testing (125%, 150%, 200%)
 - [ ] Theme switching testing (if UI change)
 
-## Build & Verify
+## Build & Test (CRITICAL - Always Required)
+
+**After completing tasks, always build, publish, and test:**
 
 ```bash
-# Build in Release mode
-dotnet build -c Release
+cd src
 
-# Test with Native AOT publish
-dotnet publish -c Release -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+# Build all configurations
+dotnet build -c Debug -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Run application
-dotnet run
+# Publish self-contained executable
+dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+
+# Test Debug build
+.\build\debug\net10.0-windows\win-x64\ClassicPanel.exe
+
+# Test Release build
+.\build\release\net10.0-windows\win-x64\ClassicPanel.exe
+
+# Test Published build (MOST IMPORTANT - this is what users get)
+.\build\publish\ClassicPanel.exe
 ```
 
-- [ ] Build succeeds without errors or warnings
-- [ ] Native AOT compilation succeeds
-- [ ] Application runs correctly
-- [ ] Changes work as expected
+**Build Checklist:**
+- [ ] Debug build succeeds without errors or warnings
+- [ ] Release build succeeds without errors or warnings
+- [ ] Publish succeeds (creates `build/publish/ClassicPanel.exe` ~122 MB)
+- [ ] Debug build runs correctly
+- [ ] Release build runs correctly
+- [ ] Published build runs correctly (CRITICAL - test this!)
+- [ ] Build outputs to correct directories:
+  - Debug: `build/debug/net10.0-windows/win-x64/`
+  - Release: `build/release/net10.0-windows/win-x64/`
+  - Published: `build/publish/`
+- [ ] Changes work as expected in all builds
 - [ ] No performance regression
 - [ ] No memory leaks introduced
 
@@ -191,7 +212,7 @@ dotnet run
 - [ ] Performance acceptable or improved
 - [ ] Error handling comprehensive
 - [ ] Accessibility maintained or improved
-- [ ] Native AOT compatible
+- [ ] Full .NET compatibility (all features work - no restrictions)
 - [ ] No memory leaks
 
 ## Update TODO.md (Before Committing)

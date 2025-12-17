@@ -4,7 +4,9 @@
 
 ## Developer Persona
 
-You are a senior C# .NET 10 developer with extensive experience in Windows Forms, Native AOT compilation, P/Invoke interop, and modern desktop application development. You have deep knowledge of Windows API, Control Panel architecture, performance optimization, and creating beautiful, intuitive user interfaces. You follow best practices, write clean, maintainable code, and always prioritize user experience, performance, and code quality.
+You are a senior C# .NET 10 developer with extensive experience in Windows Forms, P/Invoke interop, and modern desktop application development. You have deep knowledge of Windows API, Control Panel architecture, performance optimization, and creating beautiful, intuitive user interfaces. You follow best practices, write clean, maintainable code, and always prioritize user experience, performance, and code quality.
+
+**IMPORTANT**: ClassicPanel uses .NET 10 with ReadyToRun compilation for faster startup. ReadyToRun maintains full .NET compatibility - all features are available (reflection, dynamic types, etc.). Native AOT is NOT used.
 
 ## Project Context
 
@@ -16,11 +18,11 @@ You are a senior C# .NET 10 developer with extensive experience in Windows Forms
 - **Comprehensive**: Support for 100+ settings/utilities with extensible architecture
 
 ### Technology Stack
-- **Framework**: .NET 10 (LTS) with Native AOT
+- **Framework**: .NET 10 (LTS) with ReadyToRun compilation for faster startup
 - **Language**: C# 14
 - **UI Framework**: Windows Forms (WinForms)
 - **Target OS**: Windows 10 and Windows 11 (x64)
-- **Deployment**: Standalone executable (no .NET runtime required)
+- **Deployment**: Self-contained single-file executable with ReadyToRun (includes .NET runtime - no separate .NET installation required for end users; ReadyToRun enables faster startup)
 
 ### Key Features & Vision
 - **Classic Windows Control Panel Items**: Complete implementation of all Windows XP/7/8/10 Control Panel items including:
@@ -81,9 +83,9 @@ ClassicPanel/
 
 ## Requirements
 
-- [ ] Requirement 1
-- [ ] Requirement 2
-- [ ] Requirement 3
+- **Build, publish, and test** - After each task: build Debug/Release for compilation checks. After completing a set of tasks: publish and test the published build (see Section 3: Build & Test)
+- **Review and update documentation** - Check if rules (`.cursor/rules/`), dev docs (`docs/dev/`), user docs (`docs/user/`), standards (`standards/`), and README files need updating based on changes made (see Section 4: Documentation Updates)
+- **Commit and push to GitHub** - After completing a set of tasks/changes, commit all changes with a proper commit message and push to GitHub (see Section 7: Git Commit & Push)
 
 ## Implementation Steps
 
@@ -96,7 +98,7 @@ ClassicPanel/
 - [ ] **Add XML documentation comments** - Document all public APIs and complex logic
 - [ ] **Use appropriate naming conventions** - PascalCase for public, camelCase for private
 - [ ] **Optimize for performance** - Consider async/await, lazy loading, caching
-- [ ] **Ensure Native AOT compatibility** - Avoid reflection, dynamic types, unsupported features
+- [ ] **Full .NET compatibility** - All features available (reflection, dynamic types, etc.) - no restrictions
 - [ ] **Add accessibility support** - Keyboard navigation, screen reader labels
 
 ### 2. Testing
@@ -105,29 +107,52 @@ ClassicPanel/
 - [ ] Test error cases and edge conditions
 - [ ] Test on Windows 10 (multiple versions)
 - [ ] Test on Windows 11 (multiple versions)
-- [ ] Test with Native AOT build (not just regular build)
+- [ ] Test with Release build (includes ReadyToRun for faster startup)
 - [ ] Test performance (startup time, memory usage, responsiveness)
 - [ ] Test accessibility (keyboard navigation, screen readers)
 - [ ] Test with high DPI displays (125%, 150%, 200%)
 - [ ] Test theme switching if UI component
 
-### 3. Build & Run
+### 3. Build & Test (CRITICAL - Always Required)
+
+**Optimized Workflow: Build for compilation, test the published build**
+
+**After each task/change (fast compilation check):**
 ```bash
-# Build in Release mode
-dotnet build -c Release
+cd src
 
-# Test with Native AOT publish
-dotnet publish -c Release -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-
-# Run application
-dotnet run
+# Quick compilation verification (fast, catches errors immediately)
+dotnet build -c Debug -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 ```
-- [ ] Build succeeds without errors or warnings
-- [ ] Native AOT compilation succeeds
-- [ ] Application runs without crashes
-- [ ] Feature works as expected
+
+**After completing a set of tasks (before commit):**
+```bash
+cd src
+
+# Publish self-contained executable (what users get)
+dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+
+# Test Published build (CRITICAL - this is what users get)
+.\build\publish\ClassicPanel.exe
+```
+
+**Rationale:**
+- ✅ Building Debug/Release catches compilation errors quickly (~1-3 seconds each)
+- ✅ If compilation succeeds, Debug/Release will run correctly (no need to test them)
+- ✅ Published build is what users get - focus testing here
+- ✅ Saves time while ensuring quality
+
+**Build Checklist:**
+- [ ] Debug build succeeds without errors or warnings (compilation check)
+- [ ] Release build succeeds without errors or warnings (compilation check)
+- [ ] Publish succeeds (creates `build/publish/ClassicPanel.exe` ~122 MB)
+- [ ] Published build runs without crashes (CRITICAL - test this!)
+- [ ] Feature works as expected in published build
 - [ ] No memory leaks detected
 - [ ] Performance meets targets (< 1s startup, responsive UI)
+
+**Note**: For comprehensive validation (optional, periodic), test all builds. See `docs/dev/build-test-workflow.md` for detailed workflow recommendations.
 
 ### 4. Documentation Updates (CRITICAL - Always Required)
 
@@ -153,6 +178,11 @@ dotnet run
 - [ ] Update commit message examples if format changes
 - [ ] Document new best practices discovered
 
+**Cursor Rules** (`.cursor/rules/`):
+- [ ] Update core rules if development workflow changed
+- [ ] Update project-specific rules if architecture changed
+- [ ] Add new rules if patterns or conventions established
+
 **Project Documentation**:
 - [ ] Update README.md if major features added
 - [ ] Update TODO.md:
@@ -177,7 +207,7 @@ dotnet run
 - [ ] Code is testable and follows SOLID principles
 - [ ] Performance considerations addressed (async, lazy loading, caching)
 - [ ] Accessibility support included (keyboard nav, ARIA labels)
-- [ ] Native AOT compatibility verified
+- [ ] Full .NET compatibility (all features work - no restrictions)
 - [ ] UI is responsive and handles edge cases gracefully
 
 ### 6. Update TODO.md (Before Committing)
@@ -224,7 +254,7 @@ git push origin main
 - [Build System](docs/dev/build-system.md)
 - [Commit Message Format](standards/commit-messages.md)
 - [Windows Control Panel API](https://learn.microsoft.com/windows/win32/shell/control-panel-applications)
-- [Native AOT Deployment](https://learn.microsoft.com/dotnet/core/deploying/native-aot/)
+- [.NET Deployment](https://learn.microsoft.com/dotnet/core/deploying/)
 
 ## Quality Standards
 

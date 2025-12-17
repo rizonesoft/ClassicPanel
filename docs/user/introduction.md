@@ -30,16 +30,16 @@ ClassicPanel brings back that classic interface with significant improvements, a
   - Light/Dark/High Contrast themes with smooth animations
 - **Multiple View Modes**: Large Icons, Small Icons, List, and Details views
 - **Comprehensive**: All Windows Control Panel items (Hardware, Security, System, Network, Programs, Appearance, Mobile, Backup, and more)
-- **Fast Performance**: Sub-second startup, compiled with Native AOT for optimal speed
+- **Fast Performance**: Sub-second startup, optimized for speed and responsiveness
 - **Portable**: Single executable file, no installation needed
-- **Standalone**: No .NET runtime installation required
+- **Standalone**: .NET runtime is bundled in the executable with ReadyToRun for faster startup - no separate .NET installation needed
 - **Extensible**: CPL extension system for developers to add custom applets
 
 ## System Requirements
 
 - **Operating System**: Windows 10 or Windows 11
 - **Architecture**: x64 (64-bit)
-- **Additional Software**: None required (standalone executable)
+- **Additional Software**: None required - the .NET runtime is included in the executable, so you don't need to install .NET separately
 
 ## Getting Started
 

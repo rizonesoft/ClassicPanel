@@ -1,12 +1,20 @@
 # Build outputs
+# Note: build/ directory structure is tracked, but actual build artifacts are ignored
 [Dd]ebug/
 [Rr]elease/
 [Bb]in/
 [Oo]bj/
-[Bb]uild/
 build/[Dd]ebug/
 build/[Rr]elease/
+build/debug/
+build/release/
+build/obj/
 build/output/
+# Keep build/installer/ and build scripts
+!build/installer/
+!build/build.bat
+!build/build.sh
+!build/build-aot.bat
 
 # User-specific files
 *.rsuser
@@ -74,6 +82,7 @@ build/installer/*.iss.bak
 
 # Publish
 publish/
+build/publish/
 
 # OS
 .DS_Store

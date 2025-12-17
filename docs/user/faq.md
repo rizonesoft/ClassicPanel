@@ -22,7 +22,14 @@ Windows 10 and Windows 11 (64-bit).
 
 ### Do I need to install .NET?
 
-No! ClassicPanel is compiled with Native AOT, so it's a standalone executable that doesn't require .NET to be installed.
+**No!** ClassicPanel is a **self-contained** executable, which means the .NET runtime is **bundled inside** the executable file. You do **NOT** need to install .NET separately on your system. Just download and run ClassicPanel.exe - it works immediately without any additional software.
+
+**What does "self-contained" mean?**
+- The .NET runtime is included inside the ClassicPanel.exe file (~110 MB)
+- When you run ClassicPanel, it uses the bundled .NET runtime
+- No separate .NET installation is needed on your computer
+
+**Note**: ClassicPanel uses both self-contained deployment (runtime included) and ReadyToRun (performance optimization that pre-compiles code for faster startup).
 
 ### Can I run ClassicPanel from a USB drive?
 
@@ -99,7 +106,7 @@ Yes, in Large Icons view, you can select icon sizes: 16, 24, 32, or 48 pixels.
 - .NET 10
 - C# 14
 - Windows Forms
-- Native AOT compilation
+- Self-contained executable (includes .NET runtime - no separate installation required)
 
 ### Can I contribute to ClassicPanel?
 

@@ -33,7 +33,7 @@ This section contains documentation for end users.
 ## System Requirements
 
 - Windows 10 or Windows 11
-- No .NET runtime installation required (uses Native AOT)
+- Self-contained executable with ReadyToRun (includes .NET runtime bundled in the file - no separate .NET installation required; ReadyToRun enables faster startup)
 
 ## Getting Help
 

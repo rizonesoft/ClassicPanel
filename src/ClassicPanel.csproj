@@ -6,23 +6,36 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PublishAot>true</PublishAot>
+    <!-- Standard .NET build with ReadyToRun for faster startup -->
+    <!-- ReadyToRun pre-compiles code to native format while maintaining full .NET compatibility -->
+    <!-- Build outputs go to build/ directory via build scripts -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <!-- Self-contained deployment - runtime included in executable -->
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- Ensure single-file publish doesn't extract DLLs -->
+    <IncludeAllContentForSelfExtract>false</IncludeAllContentForSelfExtract>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <SupportedOSPlatform>windows10.0.10240</SupportedOSPlatform>
     <Version>0.1.0</Version>
     <Authors>Derick Payne</Authors>
     <Company>Rizonesoft</Company>
     <Product>ClassicPanel</Product>
-    <Description>A portable classic Windows Control Panel interface using .NET 10 Native AOT</Description>
+    <Description>A portable classic Windows Control Panel interface using .NET 10</Description>
     <Copyright>Copyright © 2025 Rizonetech (Pty) Ltd</Copyright>
     <ApplicationIcon>Resources\App.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Update="Resources\App.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <!-- Icon is embedded in executable via ApplicationIcon property -->
+      <!-- Don't copy to output - it's not needed as a separate file -->
+      <!-- Only copy for regular builds if needed for debugging, but not for publish -->
+      <CopyToOutputDirectory Condition="'$(PublishSingleFile)' != 'true'">PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
+
 
 </Project>
 
