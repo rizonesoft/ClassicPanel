@@ -98,6 +98,7 @@ internal static class WindowsThemeInterop
 
     /// <summary>
     /// Gets the Windows accent color.
+    /// Windows stores the accent color in the registry as ABGR (Alpha, Blue, Green, Red) format.
     /// </summary>
     /// <returns>The accent color as a Color, or null if unable to read.</returns>
     public static System.Drawing.Color? GetWindowsAccentColor()
@@ -114,15 +115,20 @@ internal static class WindowsThemeInterop
 
                     if (RegQueryValueEx(hKey, AccentColorValue, 0, out type, data, ref dataSize) == 0 && type == REG_DWORD)
                     {
-                        // Accent color is stored as ARGB (but in BGR order in registry)
+                        // Windows stores accent color as ABGR (Alpha, Blue, Green, Red) in a DWORD
+                        // Bits 31-24: Alpha
+                        // Bits 23-16: Blue
+                        // Bits 15-8:  Green
+                        // Bits 7-0:   Red
                         uint colorValue = BitConverter.ToUInt32(data, 0);
                         
-                        // Extract ARGB components (Windows stores as BGR)
-                        byte a = (byte)((colorValue >> 24) & 0xFF);
-                        byte r = (byte)((colorValue >> 16) & 0xFF);
-                        byte g = (byte)((colorValue >> 8) & 0xFF);
-                        byte b = (byte)(colorValue & 0xFF);
+                        // Extract ABGR components
+                        byte a = (byte)((colorValue >> 24) & 0xFF);  // Alpha from bits 31-24
+                        byte b = (byte)((colorValue >> 16) & 0xFF);  // Blue from bits 23-16
+                        byte g = (byte)((colorValue >> 8) & 0xFF);   // Green from bits 15-8
+                        byte r = (byte)(colorValue & 0xFF);          // Red from bits 7-0
 
+                        // Create Color with ARGB order (System.Drawing.Color expects ARGB)
                         return System.Drawing.Color.FromArgb(a, r, g, b);
                     }
                 }
@@ -155,3 +161,4 @@ internal static class WindowsThemeInterop
         return requestedMode;
     }
 }
+
