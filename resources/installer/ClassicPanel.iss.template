@@ -1,0 +1,53 @@
+; ClassicPanel InnoSetup Installer Script Template
+; Replace placeholders before use:
+; - {{APP_VERSION}} - Application version (e.g., 1.0.0)
+; - {{APP_NAME}} - Application name (ClassicPanel)
+; - {{APP_PUBLISHER}} - Publisher name
+; - {{OUTPUT_DIR}} - Build output directory
+; - {{APP_ICON}} - Path to application icon (.ico file)
+
+[Setup]
+AppId={{{{APP_ID}}}
+AppName={{APP_NAME}}
+AppVersion={{APP_VERSION}}
+AppPublisher=Rizonesoft (Rizonetech (Pty) Ltd)
+AppPublisherURL=https://rizonesoft.com
+AppSupportURL=https://rizonesoft.com
+AppUpdatesURL=https://rizonesoft.com
+DefaultDirName={autopf}\{{APP_NAME}}
+DefaultGroupName={{APP_NAME}}
+AllowNoIcons=yes
+LicenseFile=
+OutputDir={{OUTPUT_DIR}}
+OutputBaseFilename={{APP_NAME}}-Setup-{{APP_VERSION}}
+SetupIconFile={{APP_ICON}}
+Compression=lzma
+SolidCompression=yes
+WizardStyle=modern
+PrivilegesRequired=lowest
+ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
+
+[Files]
+Source: "{{OUTPUT_DIR}}\ClassicPanel.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{{OUTPUT_DIR}}\system\*"; DestDir: "{app}\system"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\{{APP_NAME}}"; Filename: "{app}\ClassicPanel.exe"
+Name: "{group}\{cm:UninstallProgram,{{APP_NAME}}}"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\{{APP_NAME}}"; Filename: "{app}\ClassicPanel.exe"; Tasks: desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{{APP_NAME}}"; Filename: "{app}\ClassicPanel.exe"; Tasks: quicklaunchicon
+
+[Run]
+Filename: "{app}\ClassicPanel.exe"; Description: "{cm:LaunchProgram,{{APP_NAME}}}"; Flags: nowait postinstall skipifsilent
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}\system"
+
