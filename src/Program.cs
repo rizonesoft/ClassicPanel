@@ -3,6 +3,7 @@ using ClassicPanel.Core.Localization;
 using ClassicPanel.Core.Performance;
 using ClassicPanel.Core.Theme;
 using ClassicPanel.UI;
+using System.Reflection;
 
 namespace ClassicPanel;
 

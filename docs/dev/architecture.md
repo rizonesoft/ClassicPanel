@@ -208,7 +208,28 @@ int CPlApplet(nint hwndCPl, uint uMsg, nint lParam1, nint lParam2);
 
 ## Resource Extraction
 
-### Icons
+### Embedded SVG Resources
+
+SVG icons are embedded directly into the main assembly for distribution. The resource naming format is:
+
+**Format**: `ClassicPanel.Resources.Actions.{filename}.svg`
+
+**Example**: `ClassicPanel.Resources.Actions.refresh.svg`
+
+**Configuration** (in `ClassicPanel.csproj`):
+```xml
+<EmbeddedResource Include="..\resources\actions\*.svg">
+  <LogicalName>ClassicPanel.Resources.Actions.%(Filename)%(Extension)</LogicalName>
+</EmbeddedResource>
+```
+
+**Loading** (via `SvgFileLoader`):
+- Resources are loaded using `Assembly.GetEntryAssembly().GetManifestResourceStream()`
+- The `SvgFileLoader.GetEmbeddedResourceName()` method constructs the full resource name: `ClassicPanel.Resources.Actions.{filename}.svg`
+- Resources are rendered using SkiaSharp for accurate SVG rendering with theme support
+- No runtime format detection - the format is hardcoded for consistency and performance
+
+### Control Panel Applet Icons
 
 Icons are extracted from the .cpl file's resources using the `idIcon` from `CPL_INQUIRE`:
 
@@ -239,6 +260,10 @@ Settings are stored in a JSON file (location TBD):
 - Icon size preference
 - Window position/size
 - Last used folder paths
+
+## See Also
+
+- [Embedded Resources](embedded-resources.md) - Detailed guide on embedded SVG resource naming and loading
 
 ## Platform Requirements
 

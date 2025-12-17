@@ -29,7 +29,7 @@ partial class MainWindow
     private void InitializeComponent()
     {
         this.menuStrip = new System.Windows.Forms.MenuStrip();
-        this.toolStrip = new System.Windows.Forms.ToolStrip();
+        this.toolStrip = new ClassicPanel.UI.ModernToolStrip();
         this.statusStrip = new System.Windows.Forms.StatusStrip();
         this.SuspendLayout();
         // 
@@ -73,7 +73,7 @@ partial class MainWindow
     }
 
     private System.Windows.Forms.MenuStrip menuStrip;
-    private System.Windows.Forms.ToolStrip toolStrip;
+    private ClassicPanel.UI.ModernToolStrip toolStrip;
     private System.Windows.Forms.StatusStrip statusStrip;
 
     #endregion

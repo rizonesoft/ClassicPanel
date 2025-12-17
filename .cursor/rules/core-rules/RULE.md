@@ -34,6 +34,7 @@ ClassicPanel is a comprehensive, fast, intuitive, and beautiful Control Panel re
 - Full WinForms compatibility (no trimming restrictions)
 - All .NET features available (reflection, dynamic types, etc.)
 - Multi-framework architecture support (WinForms default, WPF optional, C++ extensions)
+- Embedded resources: SVG icons use format `ClassicPanel.Resources.Actions.{filename}.svg`
 
 ## Code Standards
 - Follow `standards/coding-standards.md`

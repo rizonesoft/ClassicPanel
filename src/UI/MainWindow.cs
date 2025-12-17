@@ -83,13 +83,24 @@ public partial class MainWindow : Form
     /// </summary>
     private void UpdateToolbarIcons(bool isDarkMode)
     {
+        const int iconSize = 32; // 32x32px icons
+
         foreach (ToolStripItem item in toolStrip.Items)
         {
-            if (item is ToolStripButton button && button.Tag is string svgPath)
+            if (item is ToolStripButton button)
             {
-                // Re-render icon with new theme
-                var newIcon = SvgIconRenderer.RenderSvgPathThemed(svgPath, 16, isDarkMode);
-                button.Image = newIcon;
+                // Check if it's a file-based icon
+                if (button.Tag is string fileName && fileName.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+                {
+                    var newIcon = SvgFileLoader.RenderSvgFileThemed(fileName, iconSize, isDarkMode);
+                    button.Image = newIcon;
+                }
+                // Check if it's icon data (backward compatibility)
+                else if (button.Tag is SvgIconData iconData)
+                {
+                    var newIcon = SvgIconRenderer.RenderSvgIconThemed(iconData, iconSize, isDarkMode);
+                    button.Image = newIcon;
+                }
             }
         }
     }
@@ -219,48 +230,66 @@ public partial class MainWindow : Form
     private void InitializeToolbar()
     {
         var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+        const int iconSize = 32; // 32x32px icons
 
-        // Refresh button
-        var refreshIcon = SvgIconRenderer.RenderSvgPathThemed(SvgIcons.Refresh, 16, isDarkMode);
+        // Configure toolbar appearance (renderer is set in ModernToolStrip constructor)
+        toolStrip.ImageScalingSize = new System.Drawing.Size(iconSize, iconSize);
+
+        // Refresh button - load from SVG file using SkiaSharp
+        var refreshIcon = SvgFileLoader.RenderSvgFileThemed("refresh.svg", iconSize, isDarkMode);
+        if (refreshIcon == null || (refreshIcon.Width == iconSize && refreshIcon.Height == iconSize && IsBitmapBlank(refreshIcon)))
+        {
+            System.Diagnostics.Debug.WriteLine("[MainWindow] Refresh icon is blank or null!");
+        }
         var refreshButton = new ToolStripButton("Refresh", refreshIcon, (s, e) => RefreshItems())
         {
             ToolTipText = "Refresh (F5)",
-            Tag = SvgIcons.Refresh // Store SVG path for theme updates
+            Tag = "refresh.svg", // Store file name for theme updates
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None
         };
         toolStrip.Items.Add(refreshButton);
 
         toolStrip.Items.Add(new ToolStripSeparator());
 
         // View mode buttons
-        var largeIconsIcon = SvgIconRenderer.RenderSvgPathThemed(SvgIcons.LargeIcons, 16, isDarkMode);
+        var largeIconsIcon = SvgIconRenderer.RenderSvgIconThemed(SvgIcons.LargeIcons, iconSize, isDarkMode);
         var largeIconsButton = new ToolStripButton("Large Icons", largeIconsIcon, (s, e) => SetViewMode("LargeIcons"))
         {
             ToolTipText = "Large Icons",
-            Tag = SvgIcons.LargeIcons
+            Tag = SvgIcons.LargeIcons,
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None
         };
         toolStrip.Items.Add(largeIconsButton);
 
-        var smallIconsIcon = SvgIconRenderer.RenderSvgPathThemed(SvgIcons.SmallIcons, 16, isDarkMode);
+        var smallIconsIcon = SvgIconRenderer.RenderSvgIconThemed(SvgIcons.SmallIcons, iconSize, isDarkMode);
         var smallIconsButton = new ToolStripButton("Small Icons", smallIconsIcon, (s, e) => SetViewMode("SmallIcons"))
         {
             ToolTipText = "Small Icons",
-            Tag = SvgIcons.SmallIcons
+            Tag = SvgIcons.SmallIcons,
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None
         };
         toolStrip.Items.Add(smallIconsButton);
 
-        var listIcon = SvgIconRenderer.RenderSvgPathThemed(SvgIcons.List, 16, isDarkMode);
+        var listIcon = SvgIconRenderer.RenderSvgIconThemed(SvgIcons.List, iconSize, isDarkMode);
         var listButton = new ToolStripButton("List", listIcon, (s, e) => SetViewMode("List"))
         {
             ToolTipText = "List",
-            Tag = SvgIcons.List
+            Tag = SvgIcons.List,
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None
         };
         toolStrip.Items.Add(listButton);
 
-        var detailsIcon = SvgIconRenderer.RenderSvgPathThemed(SvgIcons.Details, 16, isDarkMode);
+        var detailsIcon = SvgIconRenderer.RenderSvgIconThemed(SvgIcons.Details, iconSize, isDarkMode);
         var detailsButton = new ToolStripButton("Details", detailsIcon, (s, e) => SetViewMode("Details"))
         {
             ToolTipText = "Details",
-            Tag = SvgIcons.Details
+            Tag = SvgIcons.Details,
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None
         };
         toolStrip.Items.Add(detailsButton);
 
@@ -277,15 +306,13 @@ public partial class MainWindow : Form
     {
         var isSystemTheme = string.Equals(ThemeManager.CurrentTheme, AppConstants.SystemTheme, StringComparison.OrdinalIgnoreCase);
         var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+        const int iconSize = 32; // 32x32px icons
 
         if (_themeToggleButton == null)
         {
             // Create theme toggle button
-            var themeIcon = SvgIconRenderer.RenderSvgPathThemed(
-                isDarkMode ? SvgIcons.LightMode : SvgIcons.DarkMode, 
-                16, 
-                isDarkMode
-            );
+            var iconData = isDarkMode ? SvgIcons.LightMode : SvgIcons.DarkMode;
+            var themeIcon = SvgIconRenderer.RenderSvgIconThemed(iconData, iconSize, isDarkMode);
             _themeToggleButton = new ToolStripButton(
                 isDarkMode ? "Light Mode" : "Dark Mode",
                 themeIcon,
@@ -293,7 +320,9 @@ public partial class MainWindow : Form
             )
             {
                 ToolTipText = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode",
-                Tag = isDarkMode ? SvgIcons.LightMode : SvgIcons.DarkMode // Store SVG path for theme updates
+                Tag = iconData, // Store SVG icon data for theme updates
+                DisplayStyle = ToolStripItemDisplayStyle.Image,
+                ImageScaling = ToolStripItemImageScaling.None
             };
             toolStrip.Items.Add(_themeToggleButton);
         }
@@ -304,10 +333,10 @@ public partial class MainWindow : Form
         if (!isSystemTheme)
         {
             // Update icon and text
-            var svgPath = isDarkMode ? SvgIcons.LightMode : SvgIcons.DarkMode;
-            var newIcon = SvgIconRenderer.RenderSvgPathThemed(svgPath, 16, isDarkMode);
+            var iconData = isDarkMode ? SvgIcons.LightMode : SvgIcons.DarkMode;
+            var newIcon = SvgIconRenderer.RenderSvgIconThemed(iconData, iconSize, isDarkMode);
             _themeToggleButton.Image = newIcon;
-            _themeToggleButton.Tag = svgPath;
+            _themeToggleButton.Tag = iconData;
             _themeToggleButton.Text = isDarkMode ? "Light Mode" : "Dark Mode";
             _themeToggleButton.ToolTipText = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode";
         }
@@ -326,6 +355,29 @@ public partial class MainWindow : Form
         else
         {
             ThemeManager.CurrentTheme = AppConstants.LightTheme;
+        }
+    }
+
+    /// <summary>
+    /// Checks if a bitmap is blank (all transparent or same color).
+    /// </summary>
+    private static bool IsBitmapBlank(Bitmap bitmap)
+    {
+        if (bitmap == null) return true;
+        
+        try
+        {
+            // Sample a few pixels to check if bitmap is blank
+            var pixel1 = bitmap.GetPixel(0, 0);
+            var pixel2 = bitmap.GetPixel(bitmap.Width / 2, bitmap.Height / 2);
+            var pixel3 = bitmap.GetPixel(bitmap.Width - 1, bitmap.Height - 1);
+            
+            // If all pixels are transparent or the same, it's likely blank
+            return pixel1.A == 0 && pixel2.A == 0 && pixel3.A == 0;
+        }
+        catch
+        {
+            return false;
         }
     }
 

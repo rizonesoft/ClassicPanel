@@ -18,5 +18,10 @@
     <Copyright>Copyright © 2025 Rizonetech (Pty) Ltd</Copyright>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="3.119.1" />
+    <PackageReference Include="Svg.Skia" Version="3.2.1" />
+  </ItemGroup>
+
 </Project>
 

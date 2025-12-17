@@ -7,6 +7,7 @@ namespace ClassicPanel.Icons;
 /// <summary>
 /// Renders SVG path data to bitmaps with theme-aware colors.
 /// Supports light and dark mode with automatic color adaptation.
+/// Enhanced to support viewBox, stroke attributes, and multiple paths.
 /// </summary>
 public static class SvgIconRenderer
 {
@@ -14,23 +15,22 @@ public static class SvgIconRenderer
     private static readonly object _cacheLock = new();
 
     /// <summary>
-    /// Renders an SVG path to a bitmap with the specified size and color.
+    /// Renders an SVG icon data to a bitmap with the specified size and color.
     /// </summary>
-    /// <param name="svgPath">The SVG path data (e.g., "M 0 0 L 10 10 Z").</param>
+    /// <param name="iconData">The SVG icon data.</param>
     /// <param name="size">The size of the icon in pixels.</param>
     /// <param name="color">The color to use for rendering.</param>
-    /// <param name="strokeWidth">The stroke width (default: 1.5).</param>
     /// <returns>A bitmap containing the rendered icon.</returns>
-    public static Bitmap RenderSvgPath(string svgPath, int size, Color color, float strokeWidth = 1.5f)
+    public static Bitmap RenderSvgIcon(SvgIconData iconData, int size, Color color)
     {
-        if (string.IsNullOrWhiteSpace(svgPath))
-            throw new ArgumentException("SVG path cannot be null or empty.", nameof(svgPath));
+        if (iconData == null)
+            throw new ArgumentNullException(nameof(iconData));
 
         if (size <= 0)
             throw new ArgumentException("Size must be greater than zero.", nameof(size));
 
         // Create cache key
-        var cacheKey = $"{svgPath}|{size}|{color.ToArgb()}|{strokeWidth}";
+        var cacheKey = $"{iconData.ViewBox}|{string.Join("|", iconData.Paths)}|{size}|{color.ToArgb()}|{iconData.StrokeWidth}|{iconData.Fill}";
 
         lock (_cacheLock)
         {
@@ -47,14 +47,39 @@ public static class SvgIconRenderer
             graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
             graphics.Clear(Color.Transparent);
 
-            using (var pen = new Pen(color, strokeWidth))
-            using (var brush = new SolidBrush(color))
+            // Parse viewBox to get scaling
+            var viewBox = ParseViewBox(iconData.ViewBox);
+            var scaleX = size / viewBox.Width;
+            var scaleY = size / viewBox.Height;
+            var scale = Math.Min(scaleX, scaleY); // Maintain aspect ratio
+
+            // Calculate offset to center the icon
+            var offsetX = (size - viewBox.Width * scale) / 2;
+            var offsetY = (size - viewBox.Height * scale) / 2;
+
+            using (var pen = new Pen(color, iconData.StrokeWidth * scale))
             {
-                var path = ParseSvgPath(svgPath, size);
-                
-                // Determine if path should be filled or stroked
-                // For now, we'll stroke the path (outline style)
-                graphics.DrawPath(pen, path);
+                pen.StartCap = iconData.StrokeLineCap;
+                pen.EndCap = iconData.StrokeLineCap;
+                pen.LineJoin = iconData.StrokeLineJoin;
+
+                using (var brush = iconData.Fill ? new SolidBrush(color) : null)
+                {
+                    // Render all paths
+                    foreach (var pathData in iconData.Paths)
+                    {
+                        var path = ParseSvgPath(pathData, viewBox, scale, offsetX, offsetY);
+                        
+                        if (iconData.Fill && brush != null)
+                        {
+                            graphics.FillPath(brush, path);
+                        }
+                        else
+                        {
+                            graphics.DrawPath(pen, path);
+                        }
+                    }
+                }
             }
         }
 
@@ -71,21 +96,65 @@ public static class SvgIconRenderer
     }
 
     /// <summary>
-    /// Renders an SVG path with theme-aware colors (light or dark mode).
+    /// Renders an SVG path to a bitmap with the specified size and color (backward compatibility).
     /// </summary>
-    /// <param name="svgPath">The SVG path data.</param>
+    /// <param name="svgPath">The SVG path data (e.g., "M 0 0 L 10 10 Z").</param>
+    /// <param name="size">The size of the icon in pixels.</param>
+    /// <param name="color">The color to use for rendering.</param>
+    /// <param name="strokeWidth">The stroke width (default: 2.0).</param>
+    /// <returns>A bitmap containing the rendered icon.</returns>
+    public static Bitmap RenderSvgPath(string svgPath, int size, Color color, float strokeWidth = 2.0f)
+    {
+        var iconData = SvgIconData.FromPath(svgPath, strokeWidth);
+        return RenderSvgIcon(iconData, size, color);
+    }
+
+    /// <summary>
+    /// Renders an SVG icon with theme-aware colors (light or dark mode).
+    /// </summary>
+    /// <param name="iconData">The SVG icon data.</param>
     /// <param name="size">The size of the icon in pixels.</param>
     /// <param name="isDarkMode">True for dark mode, false for light mode.</param>
-    /// <param name="strokeWidth">The stroke width (default: 1.5).</param>
     /// <returns>A bitmap containing the rendered icon.</returns>
-    public static Bitmap RenderSvgPathThemed(string svgPath, int size, bool isDarkMode, float strokeWidth = 1.5f)
+    public static Bitmap RenderSvgIconThemed(SvgIconData iconData, int size, bool isDarkMode)
     {
         // Use appropriate color for theme
         var color = isDarkMode 
             ? Color.White  // White for dark mode
             : Color.Black; // Black for light mode
 
-        return RenderSvgPath(svgPath, size, color, strokeWidth);
+        return RenderSvgIcon(iconData, size, color);
+    }
+
+    /// <summary>
+    /// Renders an SVG path with theme-aware colors (light or dark mode) - backward compatibility.
+    /// </summary>
+    /// <param name="svgPath">The SVG path data.</param>
+    /// <param name="size">The size of the icon in pixels.</param>
+    /// <param name="isDarkMode">True for dark mode, false for light mode.</param>
+    /// <param name="strokeWidth">The stroke width (default: 2.0).</param>
+    /// <returns>A bitmap containing the rendered icon.</returns>
+    public static Bitmap RenderSvgPathThemed(string svgPath, int size, bool isDarkMode, float strokeWidth = 2.0f)
+    {
+        var iconData = SvgIconData.FromPath(svgPath, strokeWidth);
+        return RenderSvgIconThemed(iconData, size, isDarkMode);
+    }
+
+    /// <summary>
+    /// Parses a viewBox string (e.g., "0 0 24 24").
+    /// </summary>
+    private static RectangleF ParseViewBox(string viewBox)
+    {
+        if (string.IsNullOrWhiteSpace(viewBox))
+            return new RectangleF(0, 0, 24, 24); // Default
+
+        var numbers = ParseNumbers(viewBox);
+        if (numbers.Length >= 4)
+        {
+            return new RectangleF(numbers[0], numbers[1], numbers[2], numbers[3]);
+        }
+
+        return new RectangleF(0, 0, 24, 24); // Default
     }
 
     /// <summary>
@@ -105,26 +174,51 @@ public static class SvgIconRenderer
 
     /// <summary>
     /// Parses SVG path data and creates a GraphicsPath.
-    /// Supports basic SVG path commands: M, L, H, V, Z, C, S, Q, T, A.
+    /// Supports basic SVG path commands: M, L, H, V, Z, A (both absolute and relative).
     /// </summary>
-    private static GraphicsPath ParseSvgPath(string svgPath, int size)
+    private static GraphicsPath ParseSvgPath(string svgPath, RectangleF viewBox, float scale, float offsetX, float offsetY)
     {
         var path = new GraphicsPath();
         var currentPoint = new PointF(0, 0);
         var startPoint = new PointF(0, 0);
-        var scale = size / 24.0f; // Assume icons are designed for 24px, scale to target size
 
-        // Normalize path string (remove extra whitespace, normalize commands)
-        var normalized = Regex.Replace(svgPath.Trim(), @"\s+", " ");
-        
-        // Simple parser for basic paths (M, L, Z commands)
-        // This is a simplified parser - for full SVG support, consider a library
-        var commands = Regex.Matches(normalized, @"([MLHVZCSQTA])([^MLHVZCSQTA]*)", RegexOptions.IgnoreCase);
-        
-        foreach (Match match in commands)
+        // Character-by-character parser for more accurate parsing
+        // This handles cases like "M12 2v2" correctly
+        int i = 0;
+        while (i < svgPath.Length)
         {
-            var command = match.Groups[1].Value.ToUpper();
-            var args = match.Groups[2].Value.Trim();
+            // Skip whitespace
+            while (i < svgPath.Length && char.IsWhiteSpace(svgPath[i]))
+                i++;
+            
+            if (i >= svgPath.Length)
+                break;
+
+            // Get command
+            char commandChar = svgPath[i];
+            const string validCommands = "MLHVZAmmlhvza";
+            if (validCommands.IndexOf(commandChar) < 0)
+            {
+                i++;
+                continue;
+            }
+
+            bool isRelative = char.IsLower(commandChar);
+            string command = commandChar.ToString().ToUpper();
+            i++; // Move past command
+
+            // Extract arguments until next command or end of string
+            int argsStart = i;
+            while (i < svgPath.Length)
+            {
+                char c = svgPath[i];
+                // Stop if we hit a command character (case-insensitive check)
+                if (validCommands.IndexOf(c) >= 0)
+                    break;
+                i++;
+            }
+            
+            string args = svgPath.Substring(argsStart, i - argsStart).Trim();
 
             switch (command)
             {
@@ -132,16 +226,43 @@ public static class SvgIconRenderer
                     var moveCoords = ParseNumbers(args);
                     if (moveCoords.Length >= 2)
                     {
-                        currentPoint = new PointF(moveCoords[0] * scale, moveCoords[1] * scale);
+                        if (isRelative)
+                        {
+                            currentPoint = new PointF(
+                                currentPoint.X + moveCoords[0] * scale,
+                                currentPoint.Y + moveCoords[1] * scale
+                            );
+                        }
+                        else
+                        {
+                            currentPoint = new PointF(
+                                moveCoords[0] * scale + offsetX,
+                                moveCoords[1] * scale + offsetY
+                            );
+                        }
                         startPoint = currentPoint;
                     }
                     break;
 
                 case "L": // LineTo
                     var lineCoords = ParseNumbers(args);
-                    for (int i = 0; i < lineCoords.Length - 1; i += 2)
+                    for (int j = 0; j < lineCoords.Length - 1; j += 2)
                     {
-                        var endPoint = new PointF(lineCoords[i] * scale, lineCoords[i + 1] * scale);
+                        PointF endPoint;
+                        if (isRelative)
+                        {
+                            endPoint = new PointF(
+                                currentPoint.X + lineCoords[j] * scale,
+                                currentPoint.Y + lineCoords[j + 1] * scale
+                            );
+                        }
+                        else
+                        {
+                            endPoint = new PointF(
+                                lineCoords[j] * scale + offsetX,
+                                lineCoords[j + 1] * scale + offsetY
+                            );
+                        }
                         path.AddLine(currentPoint, endPoint);
                         currentPoint = endPoint;
                     }
@@ -151,7 +272,15 @@ public static class SvgIconRenderer
                     var hCoords = ParseNumbers(args);
                     foreach (var x in hCoords)
                     {
-                        var endPoint = new PointF(x * scale, currentPoint.Y);
+                        PointF endPoint;
+                        if (isRelative)
+                        {
+                            endPoint = new PointF(currentPoint.X + x * scale, currentPoint.Y);
+                        }
+                        else
+                        {
+                            endPoint = new PointF(x * scale + offsetX, currentPoint.Y);
+                        }
                         path.AddLine(currentPoint, endPoint);
                         currentPoint = endPoint;
                     }
@@ -161,23 +290,50 @@ public static class SvgIconRenderer
                     var vCoords = ParseNumbers(args);
                     foreach (var y in vCoords)
                     {
-                        var endPoint = new PointF(currentPoint.X, y * scale);
+                        PointF endPoint;
+                        if (isRelative)
+                        {
+                            endPoint = new PointF(currentPoint.X, currentPoint.Y + y * scale);
+                        }
+                        else
+                        {
+                            endPoint = new PointF(currentPoint.X, y * scale + offsetY);
+                        }
                         path.AddLine(currentPoint, endPoint);
                         currentPoint = endPoint;
                     }
                     break;
 
                 case "Z": // ClosePath
-                case "z":
                     if (currentPoint != startPoint)
                     {
                         path.AddLine(currentPoint, startPoint);
                     }
                     currentPoint = startPoint;
+                    path.CloseFigure();
                     break;
 
-                // For now, we'll skip complex curves (C, S, Q, T, A)
-                // They can be added later if needed
+                case "A": // ArcTo (elliptical arc)
+                    var arcCoords = ParseNumbers(args);
+                    // Arc format: rx ry x-axis-rotation large-arc-flag sweep-flag x y
+                    if (arcCoords.Length >= 7)
+                    {
+                        float endX, endY;
+                        if (isRelative)
+                        {
+                            endX = currentPoint.X + arcCoords[5] * scale;
+                            endY = currentPoint.Y + arcCoords[6] * scale;
+                        }
+                        else
+                        {
+                            endX = arcCoords[5] * scale + offsetX;
+                            endY = arcCoords[6] * scale + offsetY;
+                        }
+                        // Approximate arc with a line (can be enhanced later with proper arc rendering)
+                        path.AddLine(currentPoint, new PointF(endX, endY));
+                        currentPoint = new PointF(endX, endY);
+                    }
+                    break;
             }
         }
 
@@ -185,20 +341,28 @@ public static class SvgIconRenderer
     }
 
     /// <summary>
-    /// Parses a string of numbers (separated by spaces or commas) into an array of floats.
+    /// Parses a string of numbers (separated by spaces, commas, or minus signs) into an array of floats.
+    /// Handles cases like "12 2" or "12,2" or "-5.5" or "6-3" (two numbers: 6 and -3).
     /// </summary>
     private static float[] ParseNumbers(string numbers)
     {
         if (string.IsNullOrWhiteSpace(numbers))
             return Array.Empty<float>();
 
-        // Split by spaces, commas, or both
-        var parts = Regex.Split(numbers.Trim(), @"[\s,]+");
         var result = new List<float>();
+        
+        // More robust number parsing that handles:
+        // - Numbers with optional minus signs
+        // - Decimal points
+        // - Scientific notation (e, E)
+        // - Separated by spaces, commas, or minus signs (when minus is between numbers)
+        // Pattern matches: optional minus, digits, optional decimal, optional exponent
+        var numberPattern = @"(-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)";
+        var matches = Regex.Matches(numbers, numberPattern);
 
-        foreach (var part in parts)
+        foreach (Match match in matches)
         {
-            if (float.TryParse(part, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
+            if (float.TryParse(match.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
             {
                 result.Add(value);
             }

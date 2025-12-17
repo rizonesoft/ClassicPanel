@@ -1,35 +1,52 @@
 namespace ClassicPanel.Icons;
 
 /// <summary>
-/// Provides predefined SVG icon paths for common UI elements.
-/// Icons are designed for 24x24px viewport and scale automatically.
+/// Provides predefined SVG icon data for common UI elements.
+/// All icons use base64 SVG data URIs from Lucide icons for accurate rendering.
+/// Icons are designed for 24x24px viewport (viewBox="0 0 24 24") and scale automatically.
+/// 
+/// To add a new icon, simply assign a data URI:
+///   SvgIcons.IconName = SvgXmlParser.ParseSvgXml("data:image/svg+xml;base64,...");
 /// </summary>
 public static class SvgIcons
 {
-    // Theme icons (simplified paths for basic parser)
-    // Light mode: sun icon
-    public const string LightMode = "M 12 2 L 12 4 M 12 20 L 12 22 M 4 12 L 2 12 M 22 12 L 20 12 M 5.64 5.64 L 6.76 6.76 M 17.24 17.24 L 18.36 18.36 M 5.64 18.36 L 6.76 17.24 M 17.24 6.76 L 18.36 5.64 M 8 12 L 8 12 L 16 12 L 16 12 Z M 12 8 L 12 8 L 12 16 L 12 16 Z";
-    // Dark mode: moon/crescent icon
-    public const string DarkMode = "M 18 6 L 18 6 L 12 12 L 6 6 L 6 18 L 12 12 L 18 18 Z";
+    // Theme icons
+    /// <summary>Light mode icon (sun). Replace with data URI.</summary>
+    public static SvgIconData LightMode { get; set; } = SvgIconData.FromPath("M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41 M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z", 2.0f);
 
-    // File operations (simplified paths)
-    // Refresh: circular arrow
-    public const string Refresh = "M 4 12 L 4 8 L 8 8 M 20 12 L 20 16 L 16 16 M 8 4 L 12 4 L 12 8 M 16 20 L 12 20 L 12 16 M 12 6 L 12 18 M 6 12 L 18 12";
-    // Settings: gear icon
-    public const string Settings = "M 12 2 L 12 6 L 14 6 L 15 4 L 18 5 L 19 8 L 22 8 L 22 16 L 19 16 L 18 20 L 15 21 L 14 18 L 12 18 L 12 22 L 8 22 L 8 18 L 6 18 L 5 21 L 2 20 L 1 16 L 2 16 L 2 8 L 5 8 L 6 4 L 9 5 L 10 6 L 12 6 L 12 2 Z M 12 8 L 12 16 M 8 12 L 16 12";
+    /// <summary>Dark mode icon (moon). Replace with data URI.</summary>
+    public static SvgIconData DarkMode { get; set; } = SvgIconData.FromPath("M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z", 2.0f);
 
-    // View modes (simplified paths)
-    public const string LargeIcons = "M 4 4 L 4 10 L 10 10 L 10 4 Z M 14 4 L 14 10 L 20 10 L 20 4 Z M 4 14 L 4 20 L 10 20 L 10 14 Z M 14 14 L 14 20 L 20 20 L 20 14 Z";
-    public const string SmallIcons = "M 3 3 L 3 7 L 7 7 L 7 3 Z M 9 3 L 9 7 L 13 7 L 13 3 Z M 15 3 L 15 7 L 19 7 L 19 3 Z M 3 9 L 3 13 L 7 13 L 7 9 Z M 9 9 L 9 13 L 13 13 L 13 9 Z M 15 9 L 15 13 L 19 13 L 19 9 Z M 3 15 L 3 19 L 7 19 L 7 15 Z M 9 15 L 9 19 L 13 19 L 13 15 Z M 15 15 L 15 19 L 19 19 L 19 15 Z";
-    public const string List = "M 3 5 L 21 5 M 3 9 L 21 9 M 3 13 L 21 13 M 3 17 L 21 17 M 3 21 L 21 21";
-    public const string Details = "M 3 3 L 3 7 L 8 7 L 8 3 Z M 10 5 L 21 5 M 3 11 L 3 15 L 8 15 L 8 11 Z M 10 13 L 21 13 M 3 19 L 3 23 L 8 23 L 8 19 Z M 10 21 L 21 21";
+    // File operations
+    /// <summary>Refresh icon (refresh-ccw). Uses data URI.</summary>
+    public static SvgIconData Refresh { get; set; } = SvgXmlParser.ParseSvgXml(
+        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXJlZnJlc2gtY2N3LWljb24gbHVjaWRlLXJlZnJlc2gtY2N3Ij48cGF0aCBkPSJNMjEgMTJhOSA5IDAgMCAwLTktOSA5Ljc1IDkuNzUgMCAwIDAtNi43NCAyLjc0TDMgOCIvPjxwYXRoIGQ9Ik0zIDN2NWg1Ii8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMCAwIDkgOSA5Ljc1IDkuNzUgMCAwIDAgNi43NC0yLjc0TDIxIDE2Ii8+PHBhdGggZD0iTTE2IDE2aDV2NSIvPjwvc3ZnPg=="
+    );
 
-    // Common actions (simplified paths)
-    // Search: magnifying glass
-    public const string Search = "M 9.5 4 L 9.5 9.5 L 4 9.5 L 4 14.5 L 9.5 14.5 L 9.5 20 L 14.5 20 L 14.5 14.5 L 20 14.5 L 20 9.5 L 14.5 9.5 L 14.5 4 Z";
-    // Close: X icon
-    public const string Close = "M 5 5 L 19 19 M 19 5 L 5 19";
-    // Menu: hamburger icon
-    public const string Menu = "M 3 6 L 21 6 M 3 12 L 21 12 M 3 18 L 21 18";
+    /// <summary>Settings icon. Replace with data URI.</summary>
+    public static SvgIconData Settings { get; set; } = SvgIconData.FromPath("M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", 2.0f);
+
+    // View modes
+    /// <summary>Large icons view (grid-3x3). Replace with data URI.</summary>
+    public static SvgIconData LargeIcons { get; set; } = SvgIconData.FromPath("M3 3h8v8H3z M13 3h8v8h-8z M3 13h8v8H3z M13 13h8v8h-8z", 2.0f);
+
+    /// <summary>Small icons view (grid). Replace with data URI.</summary>
+    public static SvgIconData SmallIcons { get; set; } = SvgIconData.FromPath("M3 3h4v4H3z M10 3h4v4h-4z M17 3h4v4h-4z M3 10h4v4H3z M10 10h4v4h-4z M17 10h4v4h-4z M3 17h4v4H3z M10 17h4v4h-4z M17 17h4v4h-4z", 2.0f);
+
+    /// <summary>List view. Replace with data URI.</summary>
+    public static SvgIconData List { get; set; } = SvgIconData.FromPath("M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01", 2.0f);
+
+    /// <summary>Details view (list-ordered). Replace with data URI.</summary>
+    public static SvgIconData Details { get; set; } = SvgIconData.FromPath("M10 6h11 M10 12h11 M10 18h11 M4 6h1v4h-1z M4 10h2 M6 18H4c0-1 2-2 2-3s-1-1.5-2-1", 2.0f);
+
+    // Common actions
+    /// <summary>Search icon. Replace with data URI.</summary>
+    public static SvgIconData Search { get; set; } = SvgIconData.FromPath("M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z", 2.0f);
+
+    /// <summary>Close icon (X). Replace with data URI.</summary>
+    public static SvgIconData Close { get; set; } = SvgIconData.FromPath("M18 6L6 18 M6 6l12 12", 2.0f);
+
+    /// <summary>Menu icon (hamburger). Replace with data URI.</summary>
+    public static SvgIconData Menu { get; set; } = SvgIconData.FromPath("M4 12h16 M4 6h16 M4 18h16", 2.0f);
 }
 

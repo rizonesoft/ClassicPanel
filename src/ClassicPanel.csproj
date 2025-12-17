@@ -6,13 +6,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>ClassicPanel</RootNamespace>
     <!-- Standard .NET build with ReadyToRun for faster startup -->
     <!-- ReadyToRun pre-compiles code to native format while maintaining full .NET compatibility -->
     <!-- Build outputs go to build/ directory via build scripts -->
-    <PublishReadyToRun>true</PublishReadyToRun>
-    <!-- Self-contained deployment - runtime included in executable -->
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- Note: PublishReadyToRun, SelfContained, and RuntimeIdentifier are set during publish, not regular builds -->
     <!-- Ensure single-file publish doesn't extract DLLs -->
     <IncludeAllContentForSelfExtract>false</IncludeAllContentForSelfExtract>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
@@ -38,6 +36,11 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+    <!-- Embed SVG files as resources (no need to copy to output) -->
+    <!-- Resource names will be: ClassicPanel.Resources.Actions.{filename}.svg -->
+    <EmbeddedResource Include="..\resources\actions\*.svg">
+      <LogicalName>ClassicPanel.Resources.Actions.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   
   <PropertyGroup>

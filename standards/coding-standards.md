@@ -80,6 +80,13 @@ ClassicPanel
 - For NativeLibrary handles, track and cleanup on application exit
 - Close file handles, streams, and other resources promptly
 
+### Embedded Resources
+- SVG files are embedded in the main assembly using `EmbeddedResource` in the project file
+- Resource naming format: `ClassicPanel.Resources.Actions.{filename}.svg`
+- Use `SvgFileLoader.GetEmbeddedResourceName()` to construct resource names
+- Load resources using `Assembly.GetEntryAssembly().GetManifestResourceStream()`
+- Example: `ClassicPanel.Resources.Actions.refresh.svg`
+
 ### Null Safety
 - Use nullable reference types (`string?`, `Icon?`)
 - Check for null before dereferencing
