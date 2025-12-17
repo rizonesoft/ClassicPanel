@@ -40,7 +40,11 @@ public partial class MainWindow : Form
         base.OnShown(e);
         
         // Apply title bar theme again when window is shown (ensures it's applied)
-        ApplyTitleBarTheme();
+        // Use BeginInvoke to ensure window is fully rendered first
+        this.BeginInvoke(new Action(() =>
+        {
+            ApplyTitleBarTheme();
+        }));
     }
 
     /// <summary>
