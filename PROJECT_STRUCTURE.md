@@ -33,6 +33,13 @@ src/
 ├── Core/
 │   ├── CplInterop.cs             # P/Invoke definitions for Control Panel API
 │   ├── CplLoader.cs              # CPL file loading and management
+│   ├── PlatformValidator.cs      # Platform validation (OS version, architecture)
+│   ├── VersionInfo.cs            # Version information from assembly
+│   ├── AppConstants.cs           # Application-wide constants
+│   ├── Category.cs                # Category enumeration and management
+│   └── Localization/              # Localization infrastructure
+│       ├── LocalizationManager.cs # Localization manager
+│       └── README.md              # Localization documentation
 │   └── PlatformValidator.cs      # Platform validation (OS version, architecture)
 ├── Extensions/                   # CPL extension projects
 │   ├── ExtensionTemplate/        # Extension template project
