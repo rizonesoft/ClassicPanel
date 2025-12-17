@@ -285,9 +285,9 @@ Use conditional compilation for framework-specific code:
 
 1. ✅ UI abstraction layer created
 2. ✅ WinForms provider implements abstractions
-3. ✅ WPF provider available as plugin
-4. ✅ C++ extension support
-5. ✅ Framework selection mechanism
+3. ⏳ WPF provider available as plugin (structure created, implementation pending)
+4. ✅ C++ extension support (interop layer structure created)
+5. ✅ Framework selection mechanism (FrameworkDetector implemented)
 
 ## Examples
 
