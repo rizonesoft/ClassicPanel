@@ -21,7 +21,7 @@ public partial class MainWindow : Form
         base.OnLoad(e);
         
         // Apply title bar theme now that handle is created
-        ApplyTheme();
+        ApplyTitleBarTheme();
         
         // Mark startup complete when window is loaded
         PerformanceMonitor.MarkStartupComplete();
@@ -32,7 +32,15 @@ public partial class MainWindow : Form
         base.OnHandleCreated(e);
         
         // Apply title bar theme when handle is created
-        ApplyTheme();
+        ApplyTitleBarTheme();
+    }
+
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+        
+        // Apply title bar theme again when window is shown (ensures it's applied)
+        ApplyTitleBarTheme();
     }
 
     /// <summary>
@@ -41,21 +49,38 @@ public partial class MainWindow : Form
     private void ApplyTheme()
     {
         var theme = ThemeManager.CurrentThemeData;
-        var effectiveTheme = ThemeManager.GetEffectiveTheme();
-        bool isDarkMode = string.Equals(effectiveTheme, AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
         
         // Apply theme to form
         this.BackColor = theme.BackgroundColor;
         this.ForeColor = theme.ForegroundColor;
         
-        // Apply dark mode to title bar (non-client area)
-        if (this.IsHandleCreated)
-        {
-            SetWindowTitleBarTheme(this.Handle, isDarkMode);
-        }
+        // Apply title bar theme
+        ApplyTitleBarTheme();
         
         // Apply theme to all controls
         ApplyThemeToControls(this, theme);
+    }
+
+    /// <summary>
+    /// Applies dark mode to the title bar (non-client area) using DWM.
+    /// </summary>
+    private void ApplyTitleBarTheme()
+    {
+        if (!this.IsHandleCreated || this.Handle == nint.Zero)
+            return;
+
+        var effectiveTheme = ThemeManager.GetEffectiveTheme();
+        bool isDarkMode = string.Equals(effectiveTheme, AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+        
+        // Apply dark mode to title bar
+        SetWindowTitleBarTheme(this.Handle, isDarkMode);
+        
+        // Force window to refresh non-client area
+        if (this.Visible)
+        {
+            // Invalidate the non-client area to force redraw
+            this.Invalidate(true);
+        }
     }
 
     /// <summary>
