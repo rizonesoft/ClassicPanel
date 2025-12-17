@@ -31,6 +31,12 @@ Should show version `10.x.x` or higher.
 
 ### 3. Restore Dependencies
 
+**Using the solution file (recommended):**
+```bash
+dotnet restore ClassicPanel.sln
+```
+
+**Or from the project directory:**
 ```bash
 cd src
 dotnet restore
@@ -38,32 +44,65 @@ dotnet restore
 
 ### 4. Build the Project
 
+**Using the solution file (recommended - builds main app + all extensions):**
 ```bash
-dotnet build -c Release
+dotnet build ClassicPanel.sln -c Release -p:GenerateAssemblyInfo=false
+```
+
+**Or from the project directory:**
+```bash
+cd src
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 ```
 
 ### 5. Run the Application
 
 ```bash
+cd src
 dotnet run
 ```
 
-Or from Visual Studio:
+**Or from Visual Studio:**
 - Open `ClassicPanel.sln`
+- The solution includes:
+  - **Main Application** folder: ClassicPanel (main app)
+  - **Extensions** folder: All extension projects (e.g., ExtensionTemplate)
 - Press F5 to run
+
+## Solution Structure
+
+The solution file (`ClassicPanel.sln`) organizes all projects:
+
+```
+ClassicPanel.sln
+├── Main Application
+│   └── ClassicPanel            # Main application project
+└── Extensions
+    └── ExtensionTemplate        # Extension template project
+    └── ... (future extensions)
+```
+
+**Solution Features:**
+- Organized into solution folders (Main Application, Extensions)
+- Platform: win-x64 only (Debug|win-x64, Release|win-x64)
+- Extensions automatically build when main app builds (via MSBuild targets)
+- All projects use shared build configuration (Directory.Build.props)
 
 ## Project Structure
 
 ```
 ClassicPanel/
+├── ClassicPanel.sln           # Solution file (main app + extensions)
 ├── src/
-│   ├── ClassicPanel.csproj    # Project file
+│   ├── ClassicPanel.csproj    # Main application project
 │   ├── Program.cs              # Entry point
 │   ├── UI/
 │   │   └── MainWindow.cs       # Main window
 │   ├── Core/
 │   │   ├── CplInterop.cs       # P/Invoke definitions
 │   │   └── CplLoader.cs        # CPL loading logic
+│   ├── Extensions/             # Extension projects
+│   │   └── ExtensionTemplate/  # Extension template
 │   └── Resources/
 │       └── App.ico             # Application icon
 ├── build/                      # Build outputs
@@ -76,15 +115,28 @@ ClassicPanel/
 
 ### Using Visual Studio 2026
 
-1. Open the solution/project in Visual Studio 2026
-2. Select the configuration (Debug/Release)
-3. Build: `Ctrl+Shift+B` or `Build > Build Solution`
-4. Run: `F5` or `Debug > Start Debugging`
-5. Debug: Set breakpoints and use debugger tools
+1. Open `ClassicPanel.sln` in Visual Studio 2026
+2. Solution Explorer shows:
+   - **Main Application** folder → ClassicPanel project
+   - **Extensions** folder → All extension projects
+3. Select the configuration (Debug|win-x64 or Release|win-x64)
+4. Build: `Ctrl+Shift+B` or `Build > Build Solution`
+   - Builds main app and all extensions automatically
+5. Run: `F5` or `Debug > Start Debugging`
+6. Debug: Set breakpoints and use debugger tools
 
 ### Using Command Line
 
+**Using the solution file (recommended):**
 ```bash
+# Build solution (main app + all extensions)
+dotnet build ClassicPanel.sln -c Debug -p:GenerateAssemblyInfo=false
+dotnet build ClassicPanel.sln -c Release -p:GenerateAssemblyInfo=false
+```
+
+**Or from the project directory:**
+```bash
+cd src
 # Build all configurations
 dotnet build -c Debug -p:GenerateAssemblyInfo=false
 dotnet build -c Release -p:GenerateAssemblyInfo=false

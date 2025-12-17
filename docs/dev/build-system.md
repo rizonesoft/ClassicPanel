@@ -59,11 +59,15 @@ Or use the build script which automatically publishes Release builds:
 
 ### Visual Studio 2026
 
-1. Open `src/ClassicPanel.csproj` in Visual Studio
-2. Select configuration: Debug or Release
-3. Build: `Ctrl+Shift+B` or `Build > Build Solution`
-4. Run: `F5` or `Debug > Start Debugging`
-5. Publish: `Build > Publish` (configure for self-contained single file with ReadyToRun)
+1. Open `ClassicPanel.sln` in Visual Studio
+2. Solution includes:
+   - **Main Application** folder: ClassicPanel project
+   - **Extensions** folder: All extension projects
+3. Select configuration: Debug|win-x64 or Release|win-x64
+4. Build: `Ctrl+Shift+B` or `Build > Build Solution`
+   - Automatically builds main app and all extensions
+5. Run: `F5` or `Debug > Start Debugging`
+6. Publish: Right-click ClassicPanel project → `Publish` (configure for self-contained single file with ReadyToRun)
 
 ## Project File Configuration
 

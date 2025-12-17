@@ -27,7 +27,7 @@ This document outlines the complete development roadmap from initial structure t
 - [x] Set up PublishSingleFile configuration
 - [x] Configure extension projects to output to `system/` folder
 - [x] Set up MSBuild targets for extension compilation
-- [ ] Create solution structure for main app + extensions
+- [x] Create solution structure for main app + extensions
 - [x] Test ReadyToRun compilation (64-bit only)
 - [x] Verify standalone executable creation (64-bit)
 - [ ] Test executable on clean Windows 10/11 system (64-bit)
