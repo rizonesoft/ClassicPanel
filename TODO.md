@@ -303,8 +303,10 @@ This document outlines the complete development roadmap from initial structure t
   - [ ] Test shield overlay rendering in all view modes (Large Icons, Small Icons, List, Details)
 
 ### 4.5: Menu System
-- [ ] Implement File menu (Refresh, Exit)
-- [ ] Implement View menu (Large Icons, Small Icons, List, Details, Icon Size)
+- [x] Implement File menu (Refresh, Exit)
+- [x] Implement View menu (Large Icons, Small Icons, List, Details)
+- [x] Implement Tools menu (Settings)
+- [x] Implement Help menu (About)
 - [ ] Implement Tools menu with Troubleshooting options:
   - [ ] System File Checker (SFC /scannow)
   - [ ] Check Disk (CHKDSK)
@@ -370,24 +372,27 @@ This document outlines the complete development roadmap from initial structure t
 - [ ] Style ribbon to match modern Windows appearance
 
 ### 4.9: SVG Icon Support Library
-- [ ] Create separate component/DLL project for SVG icons (ClassicPanel.Icons)
-- [ ] Design SVG icon storage system
-- [ ] Implement SVG path storage (Lucide and Heroicons compatible)
+- [x] Create separate component/DLL project for SVG icons (ClassicPanel.Icons)
+- [x] Design SVG icon storage system
+- [x] Implement SVG path storage (basic path commands: M, L, H, V, Z)
+- [x] Create SVG icon renderer (convert SVG paths to WinForms Graphics)
+- [x] Implement icon caching for performance
+- [x] Support icon theming (light/dark mode)
+- [x] Add icon scaling support (16, 24, 32, 48px)
+- [x] Integrate icon library with toolbar implementation
 - [ ] Add stroke settings storage (width, color, cap, join)
-- [ ] Create SVG icon renderer (convert SVG paths to WinForms Graphics)
-- [ ] Implement icon caching for performance
-- [ ] Support icon theming (light/dark mode)
+- [ ] Support advanced SVG path commands (C, S, Q, T, A)
 - [ ] Create icon set definitions (JSON/XML configuration)
-- [ ] Add icon scaling support (16, 24, 32, 48px)
-- [ ] Integrate icon library with ribbon implementation
 
 ### 4.10: Toolbar Implementation (Alternative to Ribbon)
-- [ ] Add view mode toggle buttons
-- [ ] Add refresh button
-- [ ] Implement button state management
-- [ ] Add tooltips
-- [ ] Style toolbar appropriately
-- [ ] Use SVG icons from icon library
+- [x] Add view mode toggle buttons
+- [x] Add refresh button
+- [x] Implement button state management
+- [x] Add tooltips
+- [x] Style toolbar appropriately
+- [x] Use SVG icons from icon library
+- [x] Add theme toggle button (only visible when system theme disabled)
+- [x] Update icons on theme change
 
 ### 4.11: Context Menu
 - [ ] Add "Open" option

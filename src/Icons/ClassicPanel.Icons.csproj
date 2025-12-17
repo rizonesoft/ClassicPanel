@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>14</LangVersion>
+    <!-- This is a library project - no executable output -->
+    <OutputType>Library</OutputType>
+    <!-- Framework-dependent - uses runtime from main application -->
+    <SelfContained>false</SelfContained>
+    <Version>0.1.0</Version>
+    <Authors>Derick Payne</Authors>
+    <Company>Rizonesoft</Company>
+    <Product>ClassicPanel</Product>
+    <Description>SVG icon support library for ClassicPanel with light/dark mode rendering</Description>
+    <Copyright>Copyright © 2025 Rizonetech (Pty) Ltd</Copyright>
+  </PropertyGroup>
+
+</Project>
+

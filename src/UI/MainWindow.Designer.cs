@@ -28,17 +28,53 @@ partial class MainWindow
     /// </summary>
     private void InitializeComponent()
     {
+        this.menuStrip = new System.Windows.Forms.MenuStrip();
+        this.toolStrip = new System.Windows.Forms.ToolStrip();
+        this.statusStrip = new System.Windows.Forms.StatusStrip();
         this.SuspendLayout();
+        // 
+        // menuStrip
+        // 
+        this.menuStrip.Location = new System.Drawing.Point(0, 0);
+        this.menuStrip.Name = "menuStrip";
+        this.menuStrip.Size = new System.Drawing.Size(800, 24);
+        this.menuStrip.TabIndex = 0;
+        this.menuStrip.Text = "menuStrip";
+        // 
+        // toolStrip
+        // 
+        this.toolStrip.Location = new System.Drawing.Point(0, 24);
+        this.toolStrip.Name = "toolStrip";
+        this.toolStrip.Size = new System.Drawing.Size(800, 25);
+        this.toolStrip.TabIndex = 1;
+        this.toolStrip.Text = "toolStrip";
+        // 
+        // statusStrip
+        // 
+        this.statusStrip.Location = new System.Drawing.Point(0, 428);
+        this.statusStrip.Name = "statusStrip";
+        this.statusStrip.Size = new System.Drawing.Size(800, 22);
+        this.statusStrip.TabIndex = 2;
+        this.statusStrip.Text = "statusStrip";
         // 
         // MainWindow
         // 
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         this.ClientSize = new System.Drawing.Size(800, 450);
+        this.Controls.Add(this.statusStrip);
+        this.Controls.Add(this.toolStrip);
+        this.Controls.Add(this.menuStrip);
+        this.MainMenuStrip = this.menuStrip;
         this.Name = "MainWindow";
         this.Text = "ClassicPanel";
         this.ResumeLayout(false);
+        this.PerformLayout();
     }
+
+    private System.Windows.Forms.MenuStrip menuStrip;
+    private System.Windows.Forms.ToolStrip toolStrip;
+    private System.Windows.Forms.StatusStrip statusStrip;
 
     #endregion
 }

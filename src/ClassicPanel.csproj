@@ -47,6 +47,9 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="Icons\ClassicPanel.Icons.csproj" />
+  </ItemGroup>
 
 </Project>
 
