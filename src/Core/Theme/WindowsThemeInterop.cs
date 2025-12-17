@@ -61,11 +61,11 @@ internal static class WindowsThemeInterop
 
     #region DWM (Desktop Window Manager) API
 
-    [DllImport("dwmapi.dll", SetLastError = true)]
+    [DllImport("dwmapi.dll", SetLastError = true, PreserveSig = true)]
     private static extern int DwmSetWindowAttribute(
         nint hwnd,
         int dwAttribute,
-        nint pvAttribute,
+        ref int pvAttribute,
         int cbAttribute);
 
     // DWMWA_USE_IMMERSIVE_DARK_MODE = 20 (Windows 11)
@@ -191,19 +191,18 @@ internal static class WindowsThemeInterop
         try
         {
             int value = useDarkMode ? 1 : 0;
-            nint pvAttribute = (nint)value;
             int cbAttribute = sizeof(int);
 
             // Try Windows 11 API first (DWMWA_USE_IMMERSIVE_DARK_MODE = 20)
-            int result = DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, pvAttribute, cbAttribute);
+            int result = DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref value, cbAttribute);
             
             // If that fails, try Windows 10 API (DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19)
             if (result != 0)
             {
-                result = DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, pvAttribute, cbAttribute);
+                result = DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ref value, cbAttribute);
             }
 
-            return result == 0; // 0 = success
+            return result == 0; // 0 = success (S_OK)
         }
         catch
         {
