@@ -16,6 +16,8 @@
     <Product>ClassicPanel</Product>
     <Description>WinForms implementation of UI abstraction layer for ClassicPanel</Description>
     <Copyright>Copyright © 2025 Rizonetech (Pty) Ltd</Copyright>
+    <!-- Suppress CA1416 warnings - this is a Windows-only project using Windows Forms -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

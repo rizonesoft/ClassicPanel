@@ -23,7 +23,14 @@ The application is built using .NET 10, resulting in a single, self-contained .e
 - **Deployment**: Self-contained single-file executable with ReadyToRun (includes .NET runtime bundled inside - no separate .NET installation required for end users)
 
 **Note**: Self-contained deployment bundles the .NET runtime. ReadyToRun is enabled for faster startup - it pre-compiles code while maintaining full .NET compatibility.
-- **Target OS**: Windows 10 and Windows 11
+
+## Platform Requirements
+
+- **Operating System**: Windows 10 (build 10240 or later) or Windows 11 (build 22000 or later)
+- **Architecture**: 64-bit (x64) only - 32-bit systems are not supported
+- **Unsupported**: Windows 7, Windows 8, Windows 8.1
+
+ClassicPanel automatically validates platform requirements on startup and displays a user-friendly error message if your system doesn't meet the requirements.
 
 ## Features
 

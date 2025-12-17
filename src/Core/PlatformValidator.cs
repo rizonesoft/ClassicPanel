@@ -58,12 +58,25 @@ public static class PlatformValidator
 
         if (!IsSupportedWindowsVersion(osVersion.Value))
         {
-            ShowErrorAndExit(
-                "Unsupported Windows Version",
-                "ClassicPanel only supports Windows 10 and Windows 11.\n\n" +
-                $"Detected version: Windows {osVersion.Value.Major}.{osVersion.Value.Minor} (Build {osVersion.Value.Build})\n\n" +
-                "Please upgrade to Windows 10 (build 10240 or later) or Windows 11 to use ClassicPanel."
-            );
+            var versionName = GetWindowsVersionName(osVersion.Value);
+            var isOldWindows = osVersion.Value.Major == 6; // Windows 7, 8, or 8.1
+
+            string message;
+            if (isOldWindows)
+            {
+                message = "ClassicPanel does not support Windows 7, Windows 8, or Windows 8.1.\n\n" +
+                         $"Detected version: {versionName}\n\n" +
+                         "ClassicPanel requires Windows 10 (build 10240 or later) or Windows 11.\n\n" +
+                         "Please upgrade to a supported version of Windows to use ClassicPanel.";
+            }
+            else
+            {
+                message = "ClassicPanel only supports Windows 10 and Windows 11.\n\n" +
+                         $"Detected version: {versionName}\n\n" +
+                         "Please upgrade to Windows 10 (build 10240 or later) or Windows 11 to use ClassicPanel.";
+            }
+
+            ShowErrorAndExit("Unsupported Windows Version", message);
             return false;
         }
 
@@ -137,24 +150,68 @@ public static class PlatformValidator
 
     /// <summary>
     /// Checks if the Windows version is supported (Windows 10 or 11).
+    /// Explicitly rejects Windows 7, 8, and 8.1.
     /// </summary>
     private static bool IsSupportedWindowsVersion(WindowsVersion version)
     {
+        // Explicitly reject Windows 7 (6.1), Windows 8 (6.2), and Windows 8.1 (6.3)
+        if (version.Major == 6)
+        {
+            return false; // Windows 7, 8, or 8.1 - not supported
+        }
+
         // Windows 10: Major = 10, Minor = 0, Build >= 10240
         if (version.Major == 10 && version.Minor == 0)
         {
-            return version.Build >= WINDOWS_10_MIN_BUILD;
+            // Check if it's Windows 11 (build >= 22000) or Windows 10 (build >= 10240)
+            if (version.Build >= WINDOWS_11_MIN_BUILD)
+            {
+                return true; // Windows 11
+            }
+            return version.Build >= WINDOWS_10_MIN_BUILD; // Windows 10
         }
 
-        // Windows 11: Major = 10, Minor = 0, Build >= 22000
-        // Note: Windows 11 also reports as version 10.0, but with build >= 22000
+        // Any other version is not supported
+        return false;
+    }
+
+    /// <summary>
+    /// Gets a friendly name for the Windows version.
+    /// </summary>
+    private static string GetWindowsVersionName(WindowsVersion version)
+    {
+        // Windows 11: Major = 10, Build >= 22000
         if (version.Major == 10 && version.Build >= WINDOWS_11_MIN_BUILD)
         {
-            return true;
+            return $"Windows 11 (Build {version.Build})";
         }
 
-        // Windows 10 versions between 10240 and 21999 are supported
-        return false;
+        // Windows 10: Major = 10, Minor = 0, Build >= 10240
+        if (version.Major == 10 && version.Minor == 0 && version.Build >= WINDOWS_10_MIN_BUILD)
+        {
+            return $"Windows 10 (Build {version.Build})";
+        }
+
+        // Windows 8.1: Major = 6, Minor = 3
+        if (version.Major == 6 && version.Minor == 3)
+        {
+            return $"Windows 8.1 (Build {version.Build})";
+        }
+
+        // Windows 8: Major = 6, Minor = 2
+        if (version.Major == 6 && version.Minor == 2)
+        {
+            return $"Windows 8 (Build {version.Build})";
+        }
+
+        // Windows 7: Major = 6, Minor = 1
+        if (version.Major == 6 && version.Minor == 1)
+        {
+            return $"Windows 7 (Build {version.Build})";
+        }
+
+        // Unknown or unsupported version
+        return $"Windows {version.Major}.{version.Minor} (Build {version.Build})";
     }
 
     /// <summary>

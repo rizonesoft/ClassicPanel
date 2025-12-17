@@ -255,14 +255,22 @@ ClassicPanel has strict platform requirements enforced at both build-time and ru
 
 ### Platform Validation
 
-The `PlatformValidator` class performs runtime validation on application startup:
+The `PlatformValidator` class performs comprehensive runtime validation on application startup:
 1. Checks that the OS is Windows
-2. Verifies architecture is x64
+2. Verifies architecture is x64 (64-bit only)
 3. Validates Windows version is 10 or 11
-4. Shows user-friendly error messages if requirements aren't met
-5. Exits gracefully if platform is unsupported
+   - **Windows 10**: Build 10240 or later required
+   - **Windows 11**: Build 22000 or later supported
+   - **Explicitly rejects**: Windows 7, Windows 8, Windows 8.1
+4. Shows user-friendly, version-specific error messages if requirements aren't met
+5. Exits gracefully if platform is unsupported (before any UI initialization)
 
-Platform validation runs in `Program.Main()` before any other initialization.
+Platform validation runs in `Program.Main()` before any other initialization, ensuring unsupported platforms are caught immediately.
+
+**Error Messages:**
+- Detects and names the specific Windows version (Windows 7, 8, 8.1, 10, 11)
+- Provides clear upgrade instructions
+- Shows detected build number for troubleshooting
 
 ### Build-Time Enforcement
 

@@ -43,6 +43,8 @@
   <PropertyGroup>
     <!-- Embed application manifest -->
     <ApplicationManifest>Resources\ClassicPanel.manifest</ApplicationManifest>
+    <!-- Suppress CA1416 warnings - ClassicPanel is Windows-only, all Windows Forms APIs are valid -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
 

@@ -67,15 +67,15 @@ This document outlines the complete development roadmap from initial structure t
 ## Phase 1: Core Architecture
 
 ### 1.0: Platform & Architecture Requirements
-- [ ] **Windows 10/11 Only**: Implement OS version checking
-  - [ ] Check minimum Windows version (Windows 10 build 10240 or later)
-  - [ ] Display friendly error message if running on unsupported OS
-  - [ ] Block execution on Windows 7/8/8.1
-- [ ] **64-bit Only**: Enforce 64-bit architecture requirement
-  - [ ] Check CPU architecture at runtime
-  - [ ] Display friendly error message if running on 32-bit system
-  - [ ] Configure all projects for win-x64 runtime only
-- [ ] Document platform requirements in README and installer
+- [x] **Windows 10/11 Only**: Implement OS version checking
+  - [x] Check minimum Windows version (Windows 10 build 10240 or later)
+  - [x] Display friendly error message if running on unsupported OS
+  - [x] Block execution on Windows 7/8/8.1 (explicitly rejected with version-specific messages)
+- [x] **64-bit Only**: Enforce 64-bit architecture requirement
+  - [x] Check CPU architecture at runtime
+  - [x] Display friendly error message if running on 32-bit system
+  - [x] Configure all projects for win-x64 runtime only
+- [x] Document platform requirements in README and installer
 
 ### 1.1: Error Handling System
 - [ ] Create ErrorInfo class/struct
