@@ -46,11 +46,11 @@ This document outlines the complete development roadmap from initial structure t
   - [x] Extensions MUST be framework-dependent (NOT self-contained)
   - [x] Extensions use runtime from main ClassicPanel.exe
   - [x] See `docs/dev/extension-deployment.md` for details
-- [ ] Create application manifest
-- [ ] Set up version numbering system
-- [ ] Create constants/configuration class
-- [ ] Create Category enumeration and management system
-- [ ] Set up localization/internationalization infrastructure
+- [x] Create application manifest
+- [x] Set up version numbering system
+- [x] Create constants/configuration class
+- [x] Create Category enumeration and management system
+- [x] Set up localization/internationalization infrastructure
 - [ ] Create theme system architecture
 - [ ] Design performance monitoring infrastructure
 - [ ] **Design UI Abstraction Layer** for multi-framework support:

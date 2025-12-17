@@ -34,7 +34,16 @@
       <CopyToOutputDirectory Condition="'$(PublishSingleFile)' != 'true'">PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+    <None Update="Resources\ClassicPanel.manifest">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
+  
+  <PropertyGroup>
+    <!-- Embed application manifest -->
+    <ApplicationManifest>Resources\ClassicPanel.manifest</ApplicationManifest>
+  </PropertyGroup>
 
 
 </Project>

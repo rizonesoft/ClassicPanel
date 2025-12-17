@@ -1,5 +1,92 @@
 # API Reference
 
+## Core Classes
+
+### VersionInfo
+
+Provides version information for ClassicPanel.
+
+**Properties:**
+- `Version` (string) - Full version string (e.g., "0.1.0")
+- `VersionObject` (Version) - Version as System.Version object
+- `AssemblyVersion` (string) - Assembly version
+- `FileVersion` (string) - File version
+- `ProductName` (string) - Product name
+- `Company` (string) - Company name
+- `Copyright` (string) - Copyright information
+- `Description` (string) - Product description
+- `BuildDate` (DateTime) - Build date
+
+**Methods:**
+- `GetDisplayVersion()` - Gets formatted version string for display
+- `GetDetailedVersionInfo()` - Gets detailed version information for about dialogs
+
+### AppConstants
+
+Application-wide constants and configuration values.
+
+**Categories:**
+- Application Information (name, company, website)
+- File System Paths (system folder, settings file, registry paths)
+- Control Panel Extensions (.cpl file extension, filters)
+- UI Constants (window sizes, icon sizes, sidebar dimensions)
+- Performance Targets (startup time, frame rate)
+- Search & Filter (minimum search length, debounce delay)
+- Keyboard Shortcuts (command palette, search, favorites)
+- Localization (default culture, resource folder)
+- Themes (default, light, dark, high contrast)
+- Error Messages (generic, CPL load, platform errors)
+
+### Category
+
+Enumeration of categories for organizing Control Panel items.
+
+**Values:**
+- `All` - All items (no filter)
+- `System` - System and maintenance tools
+- `Network` - Network and internet settings
+- `Security` - Security and user account settings
+- `Hardware` - Hardware and device settings
+- `Programs` - Programs and features
+- `Appearance` - Appearance and personalization
+- `AdministrativeTools` - Administrative tools
+- `Mobile` - Mobile and sync settings
+- `EaseOfAccess` - Ease of access and accessibility
+- `ClockAndRegion` - Clock, language, and region settings
+- `Uncategorized` - Items without a specific category
+
+### CategoryHelper
+
+Utilities for working with categories.
+
+**Methods:**
+- `GetDisplayName(Category)` - Gets display name for a category
+- `GetDescription(Category)` - Gets description for a category
+- `GetStandardCategories()` - Gets all categories except "All" and "Uncategorized"
+- `GetAllCategories()` - Gets all available categories
+- `TryParse(string, out Category)` - Attempts to parse a category from a string
+
+### LocalizationManager
+
+Manages localization and internationalization.
+
+**Properties:**
+- `CurrentCulture` (CultureInfo) - Gets or sets the current culture
+- `DefaultCulture` (CultureInfo) - Gets the default culture
+
+**Methods:**
+- `Initialize()` - Initializes the localization manager
+- `GetString(string, string?)` - Gets a localized string by key
+- `GetString(string, params object[])` - Gets a formatted localized string
+- `GetAvailableCultures()` - Gets all available cultures
+- `IsCultureSupported(CultureInfo)` - Checks if a culture is supported
+- `TrySetCulture(string)` - Attempts to set the culture from a culture name
+
+**Events:**
+- `OnCultureChanged` - Raised when the culture changes
+
+# API Reference
+
 ## Namespace: ClassicPanel.Core
 
 ### CplInterop

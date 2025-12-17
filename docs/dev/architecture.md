@@ -71,8 +71,13 @@ ClassicPanel is designed with a **plugin-based, multi-framework architecture** t
 - `CplInterop`: P/Invoke definitions for Windows Control Panel API
 - `CplLoader`: Scans and loads .cpl files from system folder
 - `CplItem`: Data model representing a single applet
-- `ExtensionManager`: Manages CPL extensions and plugins
-- `FrameworkLoader`: Loads and manages UI framework implementations
+- `PlatformValidator`: Validates platform requirements (Windows 10/11, 64-bit)
+- `VersionInfo`: Provides version information from assembly attributes
+- `AppConstants`: Application-wide constants and configuration values
+- `Category` / `CategoryHelper`: Category enumeration and management for organizing Control Panel items
+- `LocalizationManager`: Manages localization and internationalization
+- `ExtensionManager`: Manages CPL extensions and plugins (future)
+- `FrameworkLoader`: Loads and manages UI framework implementations (future)
 
 ### 4. Interop Layer (`ClassicPanel.Interop`)
 
