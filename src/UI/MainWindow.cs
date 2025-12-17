@@ -1,3 +1,4 @@
+using ClassicPanel.Core.Performance;
 using ClassicPanel.Core.Theme;
 
 namespace ClassicPanel.UI;
@@ -11,6 +12,14 @@ public partial class MainWindow : Form
         
         // Subscribe to theme changes
         ThemeManager.OnThemeChanged += (effectiveTheme) => ApplyTheme();
+    }
+
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        
+        // Mark startup complete when window is loaded
+        PerformanceMonitor.MarkStartupComplete();
     }
 
     /// <summary>

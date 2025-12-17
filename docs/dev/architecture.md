@@ -79,6 +79,9 @@ ClassicPanel is designed with a **plugin-based, multi-framework architecture** t
 - `ThemeManager`: Manages application themes (light/dark/system mode) with Windows accent colors
 - `ThemeData`: Represents theme color data and styling information
 - `WindowsThemeInterop`: P/Invoke definitions for reading Windows theme and accent color settings
+- `PerformanceMonitor`: Monitors application performance (startup time, memory, operation timings)
+- `PerformanceMetrics`: Data structure for performance metrics snapshots
+- `OperationTimer`: Timer for measuring operation performance
 - `ExtensionManager`: Manages CPL extensions and plugins (future)
 - `FrameworkLoader`: Loads and manages UI framework implementations (future)
 

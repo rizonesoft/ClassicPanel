@@ -1,5 +1,6 @@
 using ClassicPanel.Core;
 using ClassicPanel.Core.Localization;
+using ClassicPanel.Core.Performance;
 using ClassicPanel.Core.Theme;
 using ClassicPanel.UI;
 
@@ -13,6 +14,9 @@ internal static class Program
     [STAThread]
     static void Main()
     {
+        // Initialize performance monitoring first
+        PerformanceMonitor.Initialize();
+
         // Validate platform requirements (Windows 10/11, 64-bit)
         // This will show an error dialog and exit if requirements aren't met
         PlatformValidator.ValidatePlatform();

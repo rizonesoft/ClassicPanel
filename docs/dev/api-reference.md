@@ -85,6 +85,69 @@ Manages localization and internationalization.
 **Events:**
 - `OnCultureChanged` - Raised when the culture changes
 
+### PerformanceMonitor
+
+Manages application performance monitoring including startup time, memory usage, and operation timings.
+
+**Properties:**
+- `IsEnabled` (bool) - Gets or sets whether performance monitoring is enabled
+- `StartupTimeMs` (long) - Gets the application startup time in milliseconds
+- `CurrentMemoryBytes` (long) - Gets the current memory usage in bytes
+- `PeakMemoryBytes` (long) - Gets the peak memory usage in bytes
+- `OperationCount` (int) - Gets the number of operations tracked
+- `AverageOperationTimeMs` (double) - Gets the average operation time in milliseconds
+- `SlowestOperationTimeMs` (long) - Gets the slowest operation time in milliseconds
+
+**Methods:**
+- `Initialize()` - Initializes the performance monitor (call at startup)
+- `MarkStartupComplete()` - Marks application as fully started and records startup time
+- `RecordOperation(string, long)` - Records an operation time
+- `UpdateMemoryUsage()` - Updates memory usage tracking
+- `GetMetrics()` - Gets current performance metrics
+- `GetMetricsSummary()` - Gets a formatted string with performance metrics
+- `Reset()` - Resets all performance metrics
+
+**Events:**
+- `OnSlowOperation` - Raised when a slow operation is detected (>100ms)
+
+### OperationTimer
+
+Provides timing functionality for measuring operation performance. Implements IDisposable for convenient using statement usage.
+
+**Properties:**
+- `ElapsedMilliseconds` (long) - Gets the elapsed time in milliseconds
+- `Elapsed` (TimeSpan) - Gets the elapsed time as a TimeSpan
+
+**Methods:**
+- `Start(string)` - Creates a timer that automatically records to PerformanceMonitor
+- `Stop()` - Stops the timer and records the operation
+- `Dispose()` - Disposes the timer, stopping it if not already stopped
+
+**Usage:**
+```csharp
+using (OperationTimer.Start("LoadApplets"))
+{
+    // Operation code
+}
+```
+
+### PerformanceMetrics
+
+Represents performance metrics collected by the performance monitoring system.
+
+**Properties:**
+- `StartupTimeMs` (long) - Application startup time in milliseconds
+- `MemoryUsageBytes` (long) / `MemoryUsageMB` (double) - Current memory usage
+- `PeakMemoryUsageBytes` (long) / `PeakMemoryUsageMB` (double) - Peak memory usage
+- `CpuUsagePercent` (double) - CPU usage percentage (0-100, placeholder)
+- `OperationCount` (int) - Number of operations tracked
+- `AverageOperationTimeMs` (double) - Average operation time
+- `SlowestOperationTimeMs` (long) - Slowest operation time
+- `Timestamp` (DateTime) - When metrics were collected
+
+**Methods:**
+- `CreateSnapshot()` - Creates a snapshot of current performance metrics
+
 ### ThemeManager
 
 Manages application themes including light, dark, and system mode. Supports Windows accent colors.
