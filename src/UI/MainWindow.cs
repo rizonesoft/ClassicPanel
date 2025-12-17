@@ -73,15 +73,25 @@ public partial class MainWindow : Form
         bool isDarkMode = string.Equals(effectiveTheme, AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
         
         // Apply dark mode to title bar
-        SetWindowTitleBarTheme(this.Handle, isDarkMode);
+        bool success = SetWindowTitleBarTheme(this.Handle, isDarkMode);
         
-        // Force window to refresh non-client area
-        if (this.Visible)
+        #if DEBUG
+        if (!success)
         {
-            // Invalidate the non-client area to force redraw
-            this.Invalidate(true);
+            System.Diagnostics.Debug.WriteLine($"Failed to apply title bar theme. Dark mode: {isDarkMode}, Handle: {this.Handle}, EffectiveTheme: {effectiveTheme}");
         }
+        #endif
+        
+        // Force window to refresh non-client area using SetWindowPos
+        const uint SWP_NOMOVE = 0x0002;
+        const uint SWP_NOSIZE = 0x0001;
+        const uint SWP_NOZORDER = 0x0004;
+        const uint SWP_FRAMECHANGED = 0x0020;
+        SetWindowPos(this.Handle, nint.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
     }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
     /// <summary>
     /// Recursively applies theme to all controls in the form.
