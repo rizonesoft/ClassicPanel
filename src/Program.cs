@@ -1,5 +1,6 @@
 using ClassicPanel.Core;
 using ClassicPanel.Core.Localization;
+using ClassicPanel.Core.Theme;
 using ClassicPanel.UI;
 
 namespace ClassicPanel;
@@ -18,6 +19,10 @@ internal static class Program
 
         // Initialize localization
         LocalizationManager.Initialize();
+
+        // Initialize theme system (defaults to System mode to follow Windows theme)
+        ThemeManager.Initialize();
+        ThemeManager.CurrentTheme = AppConstants.SystemTheme;
 
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.

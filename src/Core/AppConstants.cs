@@ -180,9 +180,9 @@ public static class AppConstants
     #region Themes
 
     /// <summary>
-    /// Default theme name.
+    /// Default theme name (System mode to follow Windows preference).
     /// </summary>
-    public const string DefaultTheme = "Light";
+    public const string DefaultTheme = "System";
 
     /// <summary>
     /// Light theme name.

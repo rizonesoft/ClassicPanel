@@ -90,8 +90,10 @@ public static class ThemeManager
             _accentColor = windowsAccent.Value;
         }
 
-        // Set default theme
-        CurrentTheme = AppConstants.DefaultTheme;
+        // Default to System theme to follow Windows preference
+        // Don't set CurrentTheme here to avoid triggering events before UI is ready
+        _currentTheme = AppConstants.SystemTheme;
+        RefreshTheme();
     }
 
     /// <summary>
