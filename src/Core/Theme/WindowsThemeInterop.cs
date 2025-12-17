@@ -155,4 +155,3 @@ internal static class WindowsThemeInterop
         return requestedMode;
     }
 }
-
