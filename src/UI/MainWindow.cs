@@ -9,6 +9,8 @@ namespace ClassicPanel.UI;
 public partial class MainWindow : Form
 {
     private ToolStripButton? _themeToggleButton;
+    private ToolStripDropDownButton? _viewDropDownButton;
+    private string _currentViewMode = "LargeIcons";
 
     public MainWindow()
     {
@@ -31,18 +33,20 @@ public partial class MainWindow : Form
     private void InitializeToolbar()
     {
         const int buttonSize = 52; // 52x52px buttons
-        toolStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
+        const int iconSize = 32;   // 32x32px icons
+        const int menuIconSize = 20; // 20x20px icons for dropdown menus
+        toolStrip.ImageScalingSize = new System.Drawing.Size(iconSize, iconSize);
         
-        // Create buttons with placeholder icons (will be loaded after window is shown)
+        // Create Refresh button
         var refreshButton = new ToolStripButton("Refresh", null, (s, e) => RefreshItems())
         {
             ToolTipText = "Refresh (F5)",
             Tag = "refresh.svg",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
             ImageScaling = ToolStripItemImageScaling.None,
-            AutoSize = false, // Disable auto-sizing to enforce exact button size
+            AutoSize = false,
             Size = new System.Drawing.Size(buttonSize, buttonSize),
-            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+            Margin = new Padding(2, 0, 2, 0)
         };
         toolStrip.Items.Add(refreshButton);
         
@@ -50,62 +54,75 @@ public partial class MainWindow : Form
         separator1.Margin = new Padding(8, 0, 8, 0);
         toolStrip.Items.Add(separator1);
         
-        var largeIconsButton = new ToolStripButton("Large Icons", null, (s, e) => SetViewMode("LargeIcons"))
+        // Create View dropdown button (styled like regular buttons)
+        _viewDropDownButton = new ToolStripDropDownButton("View", null)
         {
-            ToolTipText = "Large Icons",
+            ToolTipText = "Change View",
             Tag = "view-large.svg",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
             ImageScaling = ToolStripItemImageScaling.None,
-            AutoSize = false, // Disable auto-sizing to enforce exact button size
-            Size = new System.Drawing.Size(buttonSize, buttonSize),
-            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+            AutoSize = false,
+            Size = new System.Drawing.Size(buttonSize, buttonSize), // Same size as other buttons
+            Margin = new Padding(2, 0, 2, 0),
+            ShowDropDownArrow = false // Hide arrow for cleaner look
         };
-        toolStrip.Items.Add(largeIconsButton);
         
-        var smallIconsButton = new ToolStripButton("Small Icons", null, (s, e) => SetViewMode("SmallIcons"))
+        // Create custom dropdown menu with proper styling
+        var viewDropDownMenu = new ToolStripDropDownMenu();
+        viewDropDownMenu.Renderer = new ModernMenuStripRenderer();
+        viewDropDownMenu.Padding = new Padding(8, 8, 8, 8); // 8px container spacing
+        var dropdownBgColor = GetDropdownBackgroundColor();
+        viewDropDownMenu.BackColor = dropdownBgColor;
+        viewDropDownMenu.ShowImageMargin = true;
+        viewDropDownMenu.ShowCheckMargin = true;
+        
+        // Assign the custom dropdown menu to the button
+        _viewDropDownButton.DropDown = viewDropDownMenu;
+        
+        // Add view options to dropdown with proper spacing and matching background
+        var largeIconsItem = new ToolStripMenuItem("Large Icons", null, (s, e) => SetViewMode("LargeIcons"))
         {
-            ToolTipText = "Small Icons",
+            Tag = "view-large.svg",
+            Checked = true,
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = dropdownBgColor
+        };
+        _viewDropDownButton.DropDownItems.Add(largeIconsItem);
+        
+        var smallIconsItem = new ToolStripMenuItem("Small Icons", null, (s, e) => SetViewMode("SmallIcons"))
+        {
             Tag = "view-small.svg",
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ImageScaling = ToolStripItemImageScaling.None,
-            AutoSize = false, // Disable auto-sizing to enforce exact button size
-            Size = new System.Drawing.Size(buttonSize, buttonSize),
-            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = dropdownBgColor
         };
-        toolStrip.Items.Add(smallIconsButton);
+        _viewDropDownButton.DropDownItems.Add(smallIconsItem);
         
-        var listButton = new ToolStripButton("List", null, (s, e) => SetViewMode("List"))
+        var listItem = new ToolStripMenuItem("List", null, (s, e) => SetViewMode("List"))
         {
-            ToolTipText = "List",
             Tag = "view-list.svg",
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ImageScaling = ToolStripItemImageScaling.None,
-            AutoSize = false, // Disable auto-sizing to enforce exact button size
-            Size = new System.Drawing.Size(buttonSize, buttonSize),
-            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = dropdownBgColor
         };
-        toolStrip.Items.Add(listButton);
+        _viewDropDownButton.DropDownItems.Add(listItem);
         
-        var detailsButton = new ToolStripButton("Details", null, (s, e) => SetViewMode("Details"))
+        var detailsItem = new ToolStripMenuItem("Details", null, (s, e) => SetViewMode("Details"))
         {
-            ToolTipText = "Details",
             Tag = "view-details.svg",
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ImageScaling = ToolStripItemImageScaling.None,
-            AutoSize = false, // Disable auto-sizing to enforce exact button size
-            Size = new System.Drawing.Size(buttonSize, buttonSize),
-            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = dropdownBgColor
         };
-        toolStrip.Items.Add(detailsButton);
+        _viewDropDownButton.DropDownItems.Add(detailsItem);
+        
+        toolStrip.Items.Add(_viewDropDownButton);
         
         var separator2 = new ToolStripSeparator();
         separator2.Margin = new Padding(8, 0, 8, 0);
         toolStrip.Items.Add(separator2);
         
-        UpdateThemeToggleButton();
+        // Create 3-state theme toggle button
+        CreateThemeToggleButton(buttonSize);
         
         // Load icons after window is shown to prevent blocking startup
-        // This prevents the 3-second delay on first run
         this.Shown += (s, e) =>
         {
             BeginInvoke(new Action(LoadToolbarIcons));
@@ -113,20 +130,119 @@ public partial class MainWindow : Form
     }
     
     /// <summary>
-    /// Loads icons for toolbar buttons. Called after window is shown to avoid blocking startup.
+    /// Creates the 3-state theme toggle button.
+    /// </summary>
+    private void CreateThemeToggleButton(int buttonSize)
+    {
+        var currentTheme = ThemeManager.CurrentTheme;
+        var iconFileName = GetThemeIconFileName(currentTheme);
+        var tooltipText = GetThemeTooltipText(currentTheme);
+        
+        _themeToggleButton = new ToolStripButton("Theme", null, (s, e) => CycleTheme())
+        {
+            ToolTipText = tooltipText,
+            Tag = iconFileName,
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None,
+            AutoSize = false,
+            Size = new System.Drawing.Size(buttonSize, buttonSize),
+            Margin = new Padding(2, 0, 2, 0)
+        };
+        toolStrip.Items.Add(_themeToggleButton);
+    }
+    
+    /// <summary>
+    /// Gets the icon filename for the given theme mode.
+    /// </summary>
+    private string GetThemeIconFileName(string theme)
+    {
+        if (string.Equals(theme, AppConstants.SystemTheme, StringComparison.OrdinalIgnoreCase))
+            return "theme-system.svg";
+        if (string.Equals(theme, AppConstants.LightTheme, StringComparison.OrdinalIgnoreCase))
+            return "theme-light.svg";
+        return "theme-dark.svg";
+    }
+    
+    /// <summary>
+    /// Gets the tooltip text for the given theme mode.
+    /// </summary>
+    private string GetThemeTooltipText(string theme)
+    {
+        if (string.Equals(theme, AppConstants.SystemTheme, StringComparison.OrdinalIgnoreCase))
+            return "Theme: System (click for Light)";
+        if (string.Equals(theme, AppConstants.LightTheme, StringComparison.OrdinalIgnoreCase))
+            return "Theme: Light (click for Dark)";
+        return "Theme: Dark (click for System)";
+    }
+    
+    /// <summary>
+    /// Loads icons for toolbar buttons and dropdown items. Called after window is shown.
     /// </summary>
     private void LoadToolbarIcons()
     {
         var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
-        const int iconSize = 32; // 32x32px icons
+        const int iconSize = 32;     // 32x32px for toolbar buttons
+        const int menuIconSize = 20; // 20x20px for dropdown menu items
 
-        // Load icons for all buttons
+        // Load icons for toolbar buttons
         foreach (ToolStripItem item in toolStrip.Items)
         {
             if (item is ToolStripButton button && button.Tag is string fileName)
             {
                 var icon = SvgFileLoader.RenderSvgFileThemed(fileName, iconSize, isDarkMode);
                 button.Image = icon;
+            }
+            else if (item is ToolStripDropDownButton dropDownButton && dropDownButton.Tag is string ddFileName)
+            {
+                var icon = SvgFileLoader.RenderSvgFileThemed(ddFileName, iconSize, isDarkMode);
+                dropDownButton.Image = icon;
+                
+                // Load icons for dropdown items
+                foreach (ToolStripItem dropDownItem in dropDownButton.DropDownItems)
+                {
+                    if (dropDownItem is ToolStripMenuItem menuItem && menuItem.Tag is string menuFileName)
+                    {
+                        var menuIcon = SvgFileLoader.RenderSvgFileThemed(menuFileName, menuIconSize, isDarkMode);
+                        menuItem.Image = menuIcon;
+                    }
+                }
+            }
+        }
+        
+        // Load icons for menu items
+        LoadMenuIcons(isDarkMode, menuIconSize);
+    }
+    
+    /// <summary>
+    /// Loads icons for menu items.
+    /// </summary>
+    private void LoadMenuIcons(bool isDarkMode, int iconSize)
+    {
+        foreach (ToolStripItem item in menuStrip.Items)
+        {
+            if (item is ToolStripMenuItem menuItem)
+            {
+                LoadMenuItemIcons(menuItem, isDarkMode, iconSize);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Recursively loads icons for menu items.
+    /// </summary>
+    private void LoadMenuItemIcons(ToolStripMenuItem menuItem, bool isDarkMode, int iconSize)
+    {
+        if (menuItem.Tag is string fileName)
+        {
+            var icon = SvgFileLoader.RenderSvgFileThemed(fileName, iconSize, isDarkMode);
+            menuItem.Image = icon;
+        }
+        
+        foreach (ToolStripItem subItem in menuItem.DropDownItems)
+        {
+            if (subItem is ToolStripMenuItem subMenuItem)
+            {
+                LoadMenuItemIcons(subMenuItem, isDarkMode, iconSize);
             }
         }
     }
@@ -155,7 +271,6 @@ public partial class MainWindow : Form
         base.OnShown(e);
         
         // Apply title bar theme again when window is shown (ensures it's applied)
-        // Use BeginInvoke to ensure window is fully rendered first
         this.BeginInvoke(new Action(() =>
         {
             ApplyTitleBarTheme();
@@ -189,26 +304,35 @@ public partial class MainWindow : Form
     /// </summary>
     private void UpdateToolbarIcons(bool isDarkMode)
     {
-        const int iconSize = 32; // 32x32px icons
+        const int iconSize = 32;     // 32x32px for toolbar buttons
+        const int menuIconSize = 20; // 20x20px for dropdown menu items
 
         foreach (ToolStripItem item in toolStrip.Items)
         {
-            if (item is ToolStripButton button)
+            if (item is ToolStripButton button && button.Tag is string fileName)
             {
-                // Check if it's a file-based icon
-                if (button.Tag is string fileName && fileName.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+                var newIcon = SvgFileLoader.RenderSvgFileThemed(fileName, iconSize, isDarkMode);
+                button.Image = newIcon;
+            }
+            else if (item is ToolStripDropDownButton dropDownButton && dropDownButton.Tag is string ddFileName)
+            {
+                var newIcon = SvgFileLoader.RenderSvgFileThemed(ddFileName, iconSize, isDarkMode);
+                dropDownButton.Image = newIcon;
+                
+                // Update dropdown item icons
+                foreach (ToolStripItem dropDownItem in dropDownButton.DropDownItems)
                 {
-                    var newIcon = SvgFileLoader.RenderSvgFileThemed(fileName, iconSize, isDarkMode);
-                    button.Image = newIcon;
-                }
-                // Check if it's icon data (backward compatibility)
-                else if (button.Tag is SvgIconData iconData)
-                {
-                    var newIcon = SvgIconRenderer.RenderSvgIconThemed(iconData, iconSize, isDarkMode);
-                    button.Image = newIcon;
+                    if (dropDownItem is ToolStripMenuItem menuItem && menuItem.Tag is string menuFileName)
+                    {
+                        var menuIcon = SvgFileLoader.RenderSvgFileThemed(menuFileName, menuIconSize, isDarkMode);
+                        menuItem.Image = menuIcon;
+                    }
                 }
             }
         }
+        
+        // Update menu icons
+        LoadMenuIcons(isDarkMode, menuIconSize);
     }
 
     /// <summary>
@@ -300,98 +424,189 @@ public partial class MainWindow : Form
     }
 
     /// <summary>
-    /// Initializes the menu system.
+    /// Initializes the menu system with icons.
     /// </summary>
     private void InitializeMenu()
     {
-        // File menu
+        var bgColor = GetDropdownBackgroundColor();
+        
+        // ===== File menu =====
         var fileMenu = new ToolStripMenuItem("&File");
-        fileMenu.DropDownItems.Add(new ToolStripMenuItem("&Refresh", null, (s, e) => RefreshItems(), Keys.F5));
-        fileMenu.DropDownItems.Add(new ToolStripSeparator());
-        fileMenu.DropDownItems.Add(new ToolStripMenuItem("E&xit", null, (s, e) => Close(), Keys.Alt | Keys.F4));
+        var fileDropDown = CreateStyledDropDownMenu(bgColor);
+        fileMenu.DropDown = fileDropDown;
+        
+        var refreshMenuItem = new ToolStripMenuItem("&Refresh", null, (s, e) => RefreshItems(), Keys.F5)
+        {
+            Tag = "refresh.svg",
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = bgColor
+        };
+        fileMenu.DropDownItems.Add(refreshMenuItem);
+        
+        var separator1 = new ToolStripSeparator();
+        separator1.Margin = new Padding(4, 4, 4, 4);
+        separator1.BackColor = bgColor;
+        fileMenu.DropDownItems.Add(separator1);
+        
+        var exitMenuItem = new ToolStripMenuItem("E&xit", null, (s, e) => Close(), Keys.Alt | Keys.F4)
+        {
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = bgColor
+        };
+        fileMenu.DropDownItems.Add(exitMenuItem);
+        
         menuStrip.Items.Add(fileMenu);
 
-        // View menu
+        // ===== View menu =====
         var viewMenu = new ToolStripMenuItem("&View");
-        viewMenu.DropDownItems.Add(new ToolStripMenuItem("&Large Icons", null, (s, e) => SetViewMode("LargeIcons")));
-        viewMenu.DropDownItems.Add(new ToolStripMenuItem("&Small Icons", null, (s, e) => SetViewMode("SmallIcons")));
-        viewMenu.DropDownItems.Add(new ToolStripMenuItem("&List", null, (s, e) => SetViewMode("List")));
-        viewMenu.DropDownItems.Add(new ToolStripMenuItem("&Details", null, (s, e) => SetViewMode("Details")));
+        var viewDropDown = CreateStyledDropDownMenu(bgColor);
+        viewMenu.DropDown = viewDropDown;
+        
+        var largeIconsMenuItem = new ToolStripMenuItem("&Large Icons", null, (s, e) => SetViewMode("LargeIcons"))
+        {
+            Tag = "view-large.svg",
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = bgColor
+        };
+        viewMenu.DropDownItems.Add(largeIconsMenuItem);
+        
+        var smallIconsMenuItem = new ToolStripMenuItem("&Small Icons", null, (s, e) => SetViewMode("SmallIcons"))
+        {
+            Tag = "view-small.svg",
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = bgColor
+        };
+        viewMenu.DropDownItems.Add(smallIconsMenuItem);
+        
+        var listMenuItem = new ToolStripMenuItem("&List", null, (s, e) => SetViewMode("List"))
+        {
+            Tag = "view-list.svg",
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = bgColor
+        };
+        viewMenu.DropDownItems.Add(listMenuItem);
+        
+        var detailsMenuItem = new ToolStripMenuItem("&Details", null, (s, e) => SetViewMode("Details"))
+        {
+            Tag = "view-details.svg",
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = bgColor
+        };
+        viewMenu.DropDownItems.Add(detailsMenuItem);
+        
         menuStrip.Items.Add(viewMenu);
 
-        // Tools menu
+        // ===== Tools menu =====
         var toolsMenu = new ToolStripMenuItem("&Tools");
-        toolsMenu.DropDownItems.Add(new ToolStripMenuItem("&Settings...", null, (s, e) => ShowSettingsDialog(), Keys.Control | Keys.Oemcomma));
+        var toolsDropDown = CreateStyledDropDownMenu(bgColor);
+        toolsMenu.DropDown = toolsDropDown;
+        
+        var settingsMenuItem = new ToolStripMenuItem("&Settings...", null, (s, e) => ShowSettingsDialog(), Keys.Control | Keys.Oemcomma)
+        {
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = bgColor
+        };
+        toolsMenu.DropDownItems.Add(settingsMenuItem);
         menuStrip.Items.Add(toolsMenu);
 
-        // Help menu
+        // ===== Help menu =====
         var helpMenu = new ToolStripMenuItem("&Help");
-        helpMenu.DropDownItems.Add(new ToolStripMenuItem("&About ClassicPanel...", null, (s, e) => ShowAboutDialog()));
+        var helpDropDown = CreateStyledDropDownMenu(bgColor);
+        helpMenu.DropDown = helpDropDown;
+        
+        var aboutMenuItem = new ToolStripMenuItem("&About ClassicPanel...", null, (s, e) => ShowAboutDialog())
+        {
+            Margin = new Padding(4, 4, 4, 4),
+            BackColor = bgColor
+        };
+        helpMenu.DropDownItems.Add(aboutMenuItem);
         menuStrip.Items.Add(helpMenu);
+    }
+    
+    /// <summary>
+    /// Creates a styled ToolStripDropDownMenu with custom renderer and padding.
+    /// </summary>
+    private ToolStripDropDownMenu CreateStyledDropDownMenu(System.Drawing.Color bgColor)
+    {
+        var dropDown = new ToolStripDropDownMenu();
+        dropDown.Renderer = new ModernMenuStripRenderer();
+        dropDown.Padding = new Padding(8, 8, 8, 8); // 8px container spacing
+        dropDown.BackColor = bgColor;
+        dropDown.ShowImageMargin = true;
+        dropDown.ShowCheckMargin = false;
+        return dropDown;
+    }
+    
+    /// <summary>
+    /// Applies custom renderer and styling to a ToolStripMenuItem's dropdown.
+    /// </summary>
+    private void ApplyMenuDropdownStyling(ToolStripMenuItem menuItem)
+    {
+        menuItem.DropDownOpening += (s, e) =>
+        {
+            if (menuItem.DropDown.Renderer is not ModernMenuStripRenderer)
+            {
+                var bgColor = GetDropdownBackgroundColor();
+                menuItem.DropDown.Renderer = new ModernMenuStripRenderer();
+                menuItem.DropDown.Padding = new Padding(8, 8, 8, 8); // 8px container spacing
+                menuItem.DropDown.BackColor = bgColor;
+                
+                // Set BackColor on all dropdown items to match container
+                foreach (ToolStripItem item in menuItem.DropDownItems)
+                {
+                    item.BackColor = bgColor;
+                }
+            }
+        };
     }
 
 
     /// <summary>
-    /// Updates the theme toggle button visibility and icon based on current theme.
+    /// Updates the theme toggle button icon and tooltip.
     /// </summary>
     private void UpdateThemeToggleButton()
     {
-        var isSystemTheme = string.Equals(ThemeManager.CurrentTheme, AppConstants.SystemTheme, StringComparison.OrdinalIgnoreCase);
+        if (_themeToggleButton == null) return;
+        
         var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
-        const int iconSize = 32; // 32x32px icons
-
-        if (_themeToggleButton == null)
-        {
-            // Create theme toggle button
-            const int buttonSize = 52; // 52x52px buttons
-            var fileName = isDarkMode ? "theme-light.svg" : "theme-dark.svg";
-            // Icon will be loaded by LoadToolbarIcons() after window is shown
-            _themeToggleButton = new ToolStripButton(
-                isDarkMode ? "Light Mode" : "Dark Mode",
-                null,
-                (s, e) => ToggleTheme()
-            )
-            {
-                ToolTipText = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode",
-                Tag = fileName, // Store file name for theme updates
-                DisplayStyle = ToolStripItemDisplayStyle.Image,
-                ImageScaling = ToolStripItemImageScaling.None,
-                AutoSize = false, // Disable auto-sizing to enforce exact button size
-                Size = new System.Drawing.Size(buttonSize, buttonSize),
-                Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
-            };
-            toolStrip.Items.Add(_themeToggleButton);
-        }
-
-        // Only show when system theme is NOT enabled
-        _themeToggleButton.Visible = !isSystemTheme;
-
-        if (!isSystemTheme)
-        {
-            // Update icon and text
-            var fileName = isDarkMode ? "theme-light.svg" : "theme-dark.svg";
-            var newIcon = SvgFileLoader.RenderSvgFileThemed(fileName, iconSize, isDarkMode);
-            _themeToggleButton.Image = newIcon;
-            _themeToggleButton.Tag = fileName;
-            _themeToggleButton.Text = isDarkMode ? "Light Mode" : "Dark Mode";
-            _themeToggleButton.ToolTipText = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode";
-        }
+        var currentTheme = ThemeManager.CurrentTheme;
+        var iconFileName = GetThemeIconFileName(currentTheme);
+        var tooltipText = GetThemeTooltipText(currentTheme);
+        
+        const int iconSize = 32; // 32x32px to match toolbar buttons
+        var newIcon = SvgFileLoader.RenderSvgFileThemed(iconFileName, iconSize, isDarkMode);
+        _themeToggleButton.Image = newIcon;
+        _themeToggleButton.Tag = iconFileName;
+        _themeToggleButton.ToolTipText = tooltipText;
     }
 
     /// <summary>
-    /// Toggles between light and dark theme.
+    /// Cycles through theme modes: System → Light → Dark → System
     /// </summary>
-    private void ToggleTheme()
+    private void CycleTheme()
     {
         var currentTheme = ThemeManager.CurrentTheme;
-        if (string.Equals(currentTheme, AppConstants.LightTheme, StringComparison.OrdinalIgnoreCase))
+        
+        if (string.Equals(currentTheme, AppConstants.SystemTheme, StringComparison.OrdinalIgnoreCase))
+        {
+            ThemeManager.CurrentTheme = AppConstants.LightTheme;
+        }
+        else if (string.Equals(currentTheme, AppConstants.LightTheme, StringComparison.OrdinalIgnoreCase))
         {
             ThemeManager.CurrentTheme = AppConstants.DarkTheme;
         }
         else
         {
-            ThemeManager.CurrentTheme = AppConstants.LightTheme;
+            ThemeManager.CurrentTheme = AppConstants.SystemTheme;
         }
+    }
+
+    /// <summary>
+    /// Toggles between light and dark theme (legacy, kept for compatibility).
+    /// </summary>
+    private void ToggleTheme()
+    {
+        CycleTheme();
     }
 
     /// <summary>
@@ -427,11 +642,45 @@ public partial class MainWindow : Form
     }
 
     /// <summary>
-    /// Sets the view mode.
+    /// Sets the view mode and updates the UI.
     /// </summary>
     private void SetViewMode(string mode)
     {
-        // TODO: Implement view mode switching
+        _currentViewMode = mode;
+        
+        // Update checkmarks in View dropdown
+        if (_viewDropDownButton != null)
+        {
+            foreach (ToolStripItem item in _viewDropDownButton.DropDownItems)
+            {
+                if (item is ToolStripMenuItem menuItem)
+                {
+                    // Check if this item corresponds to the selected mode
+                    bool isSelected = menuItem.Text.Replace("&", "").Replace(" ", "") == mode ||
+                                     (mode == "LargeIcons" && menuItem.Text.Contains("Large")) ||
+                                     (mode == "SmallIcons" && menuItem.Text.Contains("Small")) ||
+                                     (mode == "List" && menuItem.Text == "List") ||
+                                     (mode == "Details" && menuItem.Text.Contains("Details"));
+                    menuItem.Checked = isSelected;
+                }
+            }
+            
+            // Update dropdown button icon to match current view
+            var iconFileName = mode switch
+            {
+                "LargeIcons" => "view-large.svg",
+                "SmallIcons" => "view-small.svg",
+                "List" => "view-list.svg",
+                "Details" => "view-details.svg",
+                _ => "view-large.svg"
+            };
+            _viewDropDownButton.Tag = iconFileName;
+            
+            var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+            var icon = SvgFileLoader.RenderSvgFileThemed(iconFileName, 32, isDarkMode);
+            _viewDropDownButton.Image = icon;
+        }
+        
         System.Diagnostics.Debug.WriteLine($"View mode: {mode}");
     }
 
@@ -457,5 +706,15 @@ public partial class MainWindow : Form
             MessageBoxIcon.Information
         );
     }
+    
+    /// <summary>
+    /// Gets the dropdown background color based on current theme.
+    /// </summary>
+    private System.Drawing.Color GetDropdownBackgroundColor()
+    {
+        var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+        return isDarkMode
+            ? System.Drawing.Color.FromArgb(0x1E, 0x1E, 0x1E)  // Dark mode: #1E1E1E
+            : System.Drawing.Color.FromArgb(0xFF, 0xFF, 0xFF); // Light mode: white
+    }
 }
-

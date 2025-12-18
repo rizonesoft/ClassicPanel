@@ -82,3 +82,4 @@ The abstraction layer includes data models for:
 - The abstraction layer does not depend on any specific UI framework
 - Framework implementations are loaded as plugins at runtime
 
+

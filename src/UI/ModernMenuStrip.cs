@@ -30,6 +30,9 @@ public class ModernMenuStrip : MenuStrip
         // Configure appearance
         this.AutoSize = true;
         this.ShowItemToolTips = false;
+        
+        // Add padding: left=10px to align with toolbar icons, top=3px, right=0px, bottom=3px
+        this.Padding = new Padding(10, 3, 0, 3);
     }
 
     protected override CreateParams CreateParams

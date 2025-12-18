@@ -69,3 +69,4 @@ public interface IStatusPanel
     bool Visible { get; set; }
 }
 
+

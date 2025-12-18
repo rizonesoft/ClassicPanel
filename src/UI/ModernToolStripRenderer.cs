@@ -5,130 +5,214 @@ using System.Windows.Forms;
 namespace ClassicPanel.UI;
 
 /// <summary>
-/// Modern toolstrip renderer with improved styling and hover effects.
+/// Fully owner-drawn ToolStrip renderer with dark/light mode support.
+/// Does NOT call any base methods to ensure complete control over appearance.
 /// </summary>
 public class ModernToolStripRenderer : ToolStripProfessionalRenderer
 {
-    protected override void OnRenderButtonBackground(ToolStripItemRenderEventArgs e)
-    {
-        var button = e.Item as ToolStripButton;
-        if (button == null || !button.Enabled)
-        {
-            base.OnRenderButtonBackground(e);
-            return;
-        }
+    private bool IsDarkMode => string.Equals(
+        ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(),
+        ClassicPanel.Core.AppConstants.DarkTheme,
+        StringComparison.OrdinalIgnoreCase);
 
-        var rect = new Rectangle(Point.Empty, e.Item.Size);
-        const int borderRadius = 2; // 2px border radius
+    // ===== Color Properties =====
+    private Color ToolbarBackgroundColor => IsDarkMode
+        ? Color.FromArgb(0x19, 0x19, 0x19)  // Dark mode: #191919
+        : Color.FromArgb(0xFF, 0xFF, 0xFF); // Light mode: white
 
-        if (button.Selected || button.Pressed)
-        {
-            // Determine if we're in dark mode or light mode
-            var isDarkMode = string.Equals(
-                ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(),
-                ClassicPanel.Core.AppConstants.DarkTheme,
-                StringComparison.OrdinalIgnoreCase);
+    private Color HoverBackgroundColor => IsDarkMode
+        ? Color.FromArgb(0x28, 0x28, 0x28)  // Dark mode: #282828
+        : Color.FromArgb(0xF6, 0xF6, 0xF6); // Light mode: #F6F6F6
 
-            // Button hover background: #282828 for dark mode, #F6F6F6 for light mode
-            var hoverBackground = isDarkMode
-                ? Color.FromArgb(0x28, 0x28, 0x28)  // Dark mode: #282828
-                : Color.FromArgb(0xF6, 0xF6, 0xF6); // Light mode: #F6F6F6
+    private Color SeparatorColor => IsDarkMode
+        ? Color.FromArgb(0x3C, 0x3C, 0x3C)  // Dark mode: #3C3C3C
+        : Color.FromArgb(0xC8, 0xC8, 0xC8); // Light mode: #C8C8C8
 
-            using (var brush = new SolidBrush(hoverBackground))
-            {
-                // Fill with rounded corners
-                e.Graphics.FillRoundedRectangle(brush, rect, borderRadius);
-            }
-        }
-    }
+    private Color TextColor => IsDarkMode
+        ? Color.FromArgb(0xFF, 0xFF, 0xFF)  // Dark mode: white
+        : Color.FromArgb(0x00, 0x00, 0x00); // Light mode: black
 
-    protected override void OnRenderItemImage(ToolStripItemImageRenderEventArgs e)
-    {
-        // Use default rendering - no color change on hover
-        base.OnRenderItemImage(e);
-    }
-
+    // ===== ToolStrip Background - FULLY OWNER DRAWN =====
     protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)
     {
-        // Determine if we're in dark mode or light mode
-        var isDarkMode = string.Equals(
-            ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(),
-            ClassicPanel.Core.AppConstants.DarkTheme,
-            StringComparison.OrdinalIgnoreCase);
-
-        // Toolbar background: #191919 for dark mode, #FFFFFF for light mode
-        var toolbarBackground = isDarkMode
-            ? Color.FromArgb(0x19, 0x19, 0x19)  // Dark mode: #191919
-            : Color.FromArgb(0xFF, 0xFF, 0xFF); // Light mode: #FFFFFF
-
-        e.Graphics.Clear(toolbarBackground);
-        
-        // Don't draw default borders - we handle this in the custom control
-        // The background is already cleared, so no additional rendering needed
-    }
-
-    protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
-    {
-        // Don't render the default border - we handle this in ModernToolStrip.OnPaint
-        // This prevents the white border on the right and bottom
-        // Completely override to prevent any default border rendering
+        e.Graphics.Clear(ToolbarBackgroundColor);
+        // No base call
     }
 
     protected override void OnRenderToolStripPanelBackground(ToolStripPanelRenderEventArgs e)
     {
-        // Determine if we're in dark mode or light mode
-        var isDarkMode = string.Equals(
-            ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(),
-            ClassicPanel.Core.AppConstants.DarkTheme,
-            StringComparison.OrdinalIgnoreCase);
-
-        // Toolbar background: #191919 for dark mode, #FFFFFF for light mode
-        var toolbarBackground = isDarkMode
-            ? Color.FromArgb(0x19, 0x19, 0x19)  // Dark mode: #191919
-            : Color.FromArgb(0xFF, 0xFF, 0xFF); // Light mode: #FFFFFF
-
-        e.Graphics.Clear(toolbarBackground);
+        e.Graphics.Clear(ToolbarBackgroundColor);
+        // No base call
     }
 
+    protected override void OnRenderToolStripContentPanelBackground(ToolStripContentPanelRenderEventArgs e)
+    {
+        e.Graphics.Clear(ToolbarBackgroundColor);
+        // No base call
+    }
+
+    // ===== Border - FULLY OWNER DRAWN =====
+    protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
+    {
+        // Don't render any border - handled by ModernToolStrip.OnPaint
+        // No base call
+    }
+
+    // ===== Button Background - FULLY OWNER DRAWN =====
+    protected override void OnRenderButtonBackground(ToolStripItemRenderEventArgs e)
+    {
+        var rect = new Rectangle(Point.Empty, e.Item.Size);
+        const int borderRadius = 2;
+
+        if (e.Item.Enabled && (e.Item.Selected || e.Item.Pressed))
+        {
+            // Hover state - draw rounded background
+            using (var brush = new SolidBrush(HoverBackgroundColor))
+            {
+                e.Graphics.FillRoundedRectangle(brush, rect, borderRadius);
+            }
+        }
+        // No background when not hovered - transparent
+        // No base call
+    }
+
+    // ===== Dropdown Button Background - FULLY OWNER DRAWN =====
+    protected override void OnRenderDropDownButtonBackground(ToolStripItemRenderEventArgs e)
+    {
+        var rect = new Rectangle(Point.Empty, e.Item.Size);
+        const int borderRadius = 2;
+
+        if (e.Item.Enabled && (e.Item.Selected || e.Item.Pressed))
+        {
+            using (var brush = new SolidBrush(HoverBackgroundColor))
+            {
+                e.Graphics.FillRoundedRectangle(brush, rect, borderRadius);
+            }
+        }
+        // No base call
+    }
+
+    // ===== Split Button Background - FULLY OWNER DRAWN =====
+    protected override void OnRenderSplitButtonBackground(ToolStripItemRenderEventArgs e)
+    {
+        OnRenderDropDownButtonBackground(e);
+        // No base call
+    }
+
+    // ===== Item Image - FULLY OWNER DRAWN =====
+    protected override void OnRenderItemImage(ToolStripItemImageRenderEventArgs e)
+    {
+        if (e.Image != null)
+        {
+            e.Graphics.DrawImage(e.Image, e.ImageRectangle);
+        }
+        // No base call
+    }
+
+    // ===== Item Text =====
+    protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+    {
+        e.TextColor = TextColor;
+        base.OnRenderItemText(e); // Safe - just draws text
+    }
+
+    // ===== Separator - FULLY OWNER DRAWN =====
     protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
     {
-        var theme = ClassicPanel.Core.Theme.ThemeManager.CurrentThemeData;
+        // Fill background first
+        var itemRect = new Rectangle(Point.Empty, e.Item.Size);
+        using (var bgBrush = new SolidBrush(ToolbarBackgroundColor))
+        {
+            e.Graphics.FillRectangle(bgBrush, itemRect);
+        }
+
+        // Draw vertical separator line
         var rect = e.Item.ContentRectangle;
-        
-        // Use a more subtle separator color that works in both light and dark modes
-        var separatorColor = theme.BorderColor;
-        
-        // Adjust opacity for better visibility in dark mode
-        var isDarkMode = string.Equals(
-            ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(), 
-            ClassicPanel.Core.AppConstants.DarkTheme, 
-            StringComparison.OrdinalIgnoreCase);
-        
-        if (isDarkMode)
+        using (var pen = new Pen(SeparatorColor, 1))
         {
-            // Use a lighter, more visible color for dark mode separators
-            separatorColor = Color.FromArgb(60, 60, 60);
-        }
-        else
-        {
-            // Use a darker color for light mode separators
-            separatorColor = Color.FromArgb(200, 200, 200);
-        }
-        
-        using (var pen = new Pen(separatorColor, 1))
-        {
-            // Center the separator vertically with proper margins (spacing already handled by Margin property)
             var centerX = rect.Left + rect.Width / 2;
-            var top = rect.Top + 8; // Top margin
-            var bottom = rect.Bottom - 8; // Bottom margin
+            var top = rect.Top + 8;
+            var bottom = rect.Bottom - 8;
             e.Graphics.DrawLine(pen, centerX, top, centerX, bottom);
         }
+        // No base call
     }
 
+    // ===== Grip - FULLY OWNER DRAWN =====
     protected override void OnRenderGrip(ToolStripGripRenderEventArgs e)
     {
-        // Don't render the grip/drag handle at all
-        // This is handled by setting GripStyle = Hidden, but we override here to be sure
+        // Don't render grip
+        // No base call
+    }
+
+    // ===== Overflow Button - FULLY OWNER DRAWN =====
+    protected override void OnRenderOverflowButtonBackground(ToolStripItemRenderEventArgs e)
+    {
+        // Don't render overflow button background
+        // No base call
+    }
+
+    // ===== Item Background - FULLY OWNER DRAWN =====
+    protected override void OnRenderItemBackground(ToolStripItemRenderEventArgs e)
+    {
+        // No background - handled by specific item type methods
+        // No base call
+    }
+
+    // ===== Item Check (for checked buttons) - FULLY OWNER DRAWN =====
+    protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
+    {
+        var checkRect = e.ImageRectangle;
+        using (var brush = new SolidBrush(HoverBackgroundColor))
+        {
+            e.Graphics.FillRectangle(brush, checkRect);
+        }
+        using (var font = new Font("Segoe UI", 9F))
+        using (var textBrush = new SolidBrush(TextColor))
+        {
+            e.Graphics.DrawString("✓", font, textBrush, checkRect.X, checkRect.Y);
+        }
+        // No base call
+    }
+
+    // ===== Arrow - FULLY OWNER DRAWN =====
+    protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)
+    {
+        e.ArrowColor = TextColor;
+        base.OnRenderArrow(e); // Safe - just draws arrow
+    }
+
+    // ===== Label Background - FULLY OWNER DRAWN =====
+    protected override void OnRenderLabelBackground(ToolStripItemRenderEventArgs e)
+    {
+        // Transparent background
+        // No base call
+    }
+
+    // ===== Status Strip Sizing Grip =====
+    protected override void OnRenderStatusStripSizingGrip(ToolStripRenderEventArgs e)
+    {
+        // Don't render
+        // No base call
+    }
+
+    // ===== Menu Item Background (for dropdown menus attached to toolbar) =====
+    protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
+    {
+        // Delegate to MenuStripRenderer for dropdown menus
+        // This shouldn't be called for toolbar items
+        // No base call
+    }
+
+    // ===== Image Margin (for dropdown menus) =====
+    protected override void OnRenderImageMargin(ToolStripRenderEventArgs e)
+    {
+        // Fill with toolbar background
+        using (var brush = new SolidBrush(ToolbarBackgroundColor))
+        {
+            e.Graphics.FillRectangle(brush, e.AffectedBounds);
+        }
+        // No base call
     }
 }
 
@@ -167,4 +251,3 @@ public static class GraphicsExtensions
         return path;
     }
 }
-
