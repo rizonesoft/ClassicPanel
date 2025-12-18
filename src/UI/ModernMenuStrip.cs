@@ -5,10 +5,10 @@ using System.Windows.Forms;
 namespace ClassicPanel.UI;
 
 /// <summary>
-/// Custom ToolStrip control with improved styling for dark/light modes.
-/// Fixes white borders, separator appearance, and removes drag handle.
+/// Custom MenuStrip control with dark/light mode support.
+/// Provides consistent styling with the toolbar.
 /// </summary>
-public class ModernToolStrip : ToolStrip
+public class ModernMenuStrip : MenuStrip
 {
     [DllImport("user32.dll")]
     private static extern int SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
@@ -20,23 +20,16 @@ public class ModernToolStrip : ToolStrip
     private const int WS_EX_CLIENTEDGE = 0x200;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ModernToolStrip"/> class.
+    /// Initializes a new instance of the <see cref="ModernMenuStrip"/> class.
     /// </summary>
-    public ModernToolStrip()
+    public ModernMenuStrip()
     {
-        // Remove drag handle (grip)
-        this.GripStyle = ToolStripGripStyle.Hidden;
-        
-        // Set renderer
-        this.Renderer = new ModernToolStripRenderer();
+        // Set renderer for dark/light mode support
+        this.Renderer = new ModernMenuStripRenderer();
         
         // Configure appearance
         this.AutoSize = true;
-        this.CanOverflow = false;
-        this.ShowItemToolTips = true;
-        
-        // Add padding: left=8px, top=5px, right=0px, bottom=5px
-        this.Padding = new Padding(8, 5, 0, 5);
+        this.ShowItemToolTips = false;
     }
 
     protected override CreateParams CreateParams
@@ -68,12 +61,12 @@ public class ModernToolStrip : ToolStrip
             ClassicPanel.Core.AppConstants.DarkTheme,
             StringComparison.OrdinalIgnoreCase);
 
-        // Toolbar background: #191919 for dark mode, #FFFFFF for light mode
-        var toolbarBackground = isDarkMode
+        // Menu background: #191919 for dark mode, #FFFFFF for light mode
+        var menuBackground = isDarkMode
             ? Color.FromArgb(0x19, 0x19, 0x19)  // Dark mode: #191919
             : Color.FromArgb(0xFF, 0xFF, 0xFF); // Light mode: #FFFFFF
 
-        e.Graphics.Clear(toolbarBackground);
+        e.Graphics.Clear(menuBackground);
     }
 
     protected override void OnPaint(PaintEventArgs e)
@@ -81,14 +74,22 @@ public class ModernToolStrip : ToolStrip
         // Paint background first
         OnPaintBackground(e);
         
-        // Call base to render items (buttons, separators, etc.)
+        // Call base to render menu items
         base.OnPaint(e);
         
-        // Draw custom border (only bottom border, no right border) on top
-        var theme = ClassicPanel.Core.Theme.ThemeManager.CurrentThemeData;
-        using (var pen = new Pen(theme.BorderColor, 1))
+        // Draw custom border (only bottom border)
+        var isDarkMode = string.Equals(
+            ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(),
+            ClassicPanel.Core.AppConstants.DarkTheme,
+            StringComparison.OrdinalIgnoreCase);
+
+        var borderColor = isDarkMode
+            ? Color.FromArgb(0x3C, 0x3C, 0x3C)  // Dark mode border
+            : Color.FromArgb(0xE0, 0xE0, 0xE0); // Light mode border
+
+        using (var pen = new Pen(borderColor, 1))
         {
-            // Only draw bottom border - no right border
+            // Only draw bottom border
             var bottomY = this.Height - 1;
             e.Graphics.DrawLine(pen, 0, bottomY, this.Width, bottomY);
         }
@@ -101,22 +102,12 @@ public class ModernToolStrip : ToolStrip
         
         if (m.Msg == WM_NCPAINT)
         {
-            // Don't process non-client area paint (prevents right border)
+            // Don't process non-client area paint (prevents unwanted borders)
             m.Result = IntPtr.Zero;
             return;
         }
         
         base.WndProc(ref m);
-    }
-
-    protected override void SetVisibleCore(bool value)
-    {
-        base.SetVisibleCore(value);
-        if (value)
-        {
-            // Force repaint when made visible to ensure proper rendering
-            this.Invalidate();
-        }
     }
 }
 

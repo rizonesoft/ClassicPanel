@@ -144,19 +144,17 @@ dotnet build -c Release -p:GenerateAssemblyInfo=false
 # Run (uses Debug by default)
 dotnet run
 
-# Publish (Self-Contained Single File with ReadyToRun)
-dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+# Build Release (Framework-Dependent with ReadyToRun)
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 
 # Run specific builds
-.\build\debug\net10.0-windows\win-x64\ClassicPanel.exe
-.\build\release\net10.0-windows\win-x64\ClassicPanel.exe
-.\build\publish\ClassicPanel.exe
+.\build\debug\ClassicPanel.exe
+.\build\release\ClassicPanel.exe
 ```
 
 **Build Outputs:**
-- Debug: `build/debug/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-- Release: `build/release/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-- Published: `build/publish/ClassicPanel.exe` (~122 MB, self-contained)
+- Debug: `build/debug/ClassicPanel.exe` (~290 KB)
+- Release: `build/release/ClassicPanel.exe` (~2.6 MB, framework-dependent)
 
 Or use the build script:
 ```bash
@@ -165,11 +163,13 @@ Or use the build script:
 
 ## Build Considerations
 
-Since ClassicPanel uses ReadyToRun compilation:
+Since ClassicPanel uses ReadyToRun + Quick JIT compilation:
 
 - **Full .NET Compatibility**: All features work, including reflection and dynamic types
-- **ReadyToRun Enabled**: Pre-compiles code for faster startup while maintaining full compatibility
-- **Test Release builds** regularly: `.\build\build.bat Release`
+- **ReadyToRun Enabled**: Pre-compiles code at build time for instant execution while maintaining full compatibility
+- **Quick JIT Enabled**: Fast compilation for dynamic code at runtime (Tier 0), then recompiles hot paths with full optimization (Tier 1)
+- **Test Debug builds** during development: `.\build\build.bat Debug`
+- **Test Release builds** before major releases: `.\build\build.bat Release`
 - **Use NativeLibrary** for dynamic loading instead of `[DllImport]` (we use this for .cpl files)
 
 ## Testing with Control Panel Applets

@@ -21,7 +21,7 @@ This extension project is automatically configured by `Directory.Build.props` to
 
 - **Debug**: `build/debug/system/YourExtension.dll`
 - **Release**: `build/release/system/YourExtension.dll`
-- **Published**: `build/publish/system/YourExtension.dll`
+- **Published**: `build/release/system/YourExtension.dll`
 
 ## Important Notes
 

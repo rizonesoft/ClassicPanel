@@ -21,22 +21,22 @@ dotnet build -c Release -p:GenerateAssemblyInfo=false
 
 ### After Completing a Set of Tasks (Before Commit)
 
-**Publish and test the published build:**
+**Build Debug and Release, test Debug build:**
 ```bash
 cd src
 
-# Publish self-contained executable (what users get)
-dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+# Build Debug and Release (compilation check)
+dotnet build -c Debug -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Test the published build (CRITICAL - this is what users get)
-.\build\publish\ClassicPanel.exe
+# Test Debug build (for development testing)
+.\build\debug\ClassicPanel.exe
 ```
 
 **Why:**
-- ✅ Tests the actual user experience
-- ✅ Validates self-contained deployment works
-- ✅ Catches runtime issues specific to published builds
-- ✅ Most important - this is what gets distributed
+- ✅ Debug build is faster to test during development
+- ✅ Catches runtime issues quickly
+- ✅ Release build should be tested before major releases
 
 ### Periodic Full Build (Optional - Weekly/Daily)
 
@@ -48,13 +48,15 @@ cd src
 dotnet build -c Debug -p:GenerateAssemblyInfo=false
 dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Publish
-dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+# Build Debug and Release
+dotnet build -c Debug -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Test all builds (comprehensive check)
-.\build\debug\net10.0-windows\win-x64\ClassicPanel.exe
-.\build\release\net10.0-windows\win-x64\ClassicPanel.exe
-.\build\publish\ClassicPanel.exe
+# Test Debug build (development)
+.\build\debug\ClassicPanel.exe
+
+# Test Release build (before major releases)
+.\build\release\ClassicPanel.exe
 ```
 
 **When to use:**
@@ -73,10 +75,10 @@ dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p
    - Missing references
    - Configuration-specific build issues
 
-2. **Published build is different**: The published build has unique characteristics:
-   - Self-contained (includes .NET runtime)
+2. **Release build is what users get**: The Release build has unique characteristics:
+   - Framework-dependent (requires .NET runtime)
    - ReadyToRun pre-compiled
-   - Single-file extraction behavior
+   - Outputs directly to `build/release/`
    - This is what users actually get
 
 3. **Time efficiency**: 
@@ -118,11 +120,13 @@ For continuous integration, always build and test all configurations:
 - name: Build Release  
   run: dotnet build -c Release
 
-- name: Publish
-  run: dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64
+- name: Build Debug and Release
+  run: |
+    dotnet build -c Debug -p:GenerateAssemblyInfo=false
+    dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-- name: Test Published Build
-  run: .\build\publish\ClassicPanel.exe --test-mode
+- name: Test Debug Build
+  run: .\build\debug\ClassicPanel.exe --test-mode
 ```
 
 ## Summary
@@ -130,14 +134,14 @@ For continuous integration, always build and test all configurations:
 **Daily workflow:**
 1. Build Debug/Release (compilation check) - Fast
 2. Work on tasks
-3. Before commit: Publish and test published build - Comprehensive
+3. Before commit: Build Debug/Release and test Debug build - Comprehensive
 
 **Periodic (weekly/daily):**
 - Full build and test all configurations - Thorough validation
 
 This approach balances speed with thoroughness, ensuring:
 - ✅ Fast iteration (compilation checks)
-- ✅ User-focused testing (published build)
-- ✅ Periodic comprehensive validation (full builds)
+- ✅ Quick development testing (Debug build)
+- ✅ Periodic Release build testing (before major releases)
 - ✅ No accumulation of broken builds
 

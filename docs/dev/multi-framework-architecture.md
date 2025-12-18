@@ -89,7 +89,7 @@ public interface IUIProvider
 
 - Implements all UI abstraction interfaces
 - Uses Windows Forms controls
-- ReadyToRun compatible (full .NET compatibility, no AOT restrictions)
+- ReadyToRun + Quick JIT compatible (full .NET compatibility, no AOT restrictions)
 - Default and recommended for most use cases
 
 **Example**:
@@ -191,7 +191,7 @@ public:
 
 ### C# Extensions
 
-C# .NET extensions with ReadyToRun (current system):
+C# .NET extensions with ReadyToRun + Quick JIT (current system):
 
 ```csharp
 public class MyExtension : IApplet

@@ -8,18 +8,18 @@ ClassicPanel is a comprehensive, fast, intuitive, and beautiful Control Panel re
 
 ### ⚠️ IMPORTANT: NO Native AOT
 - **DO NOT use Native AOT compilation** (`PublishAot`)
-- ClassicPanel uses **ReadyToRun** for faster startup (full .NET compatibility maintained)
-- ReadyToRun is enabled in the project file and build scripts
+- ClassicPanel uses **ReadyToRun + Quick JIT** for faster startup (full .NET compatibility maintained)
+- ReadyToRun pre-compiles code at build time, Quick JIT handles dynamic code at runtime
+- Both are enabled in the project file and build scripts
 - Build outputs go to `build/` directory (not `src/bin/`)
-- Use standard `dotnet build` and `dotnet publish` commands
-- Self-contained single-file publish with ReadyToRun is used for distribution (includes .NET runtime - end users do NOT need to install .NET separately)
+- Use standard `dotnet build` command
+- Framework-dependent build with ReadyToRun + Quick JIT is used for distribution (requires .NET 10 runtime - installer can bundle .NET runtime)
 
 ### Build System
 - Build scripts: `build/build.bat` (Windows) and `build/build.sh` (Linux/macOS)
 - Output directories: 
-  - Debug: `build/debug/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-  - Release: `build/release/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-  - Published: `build/publish/ClassicPanel.exe` (~122 MB, self-contained)
+  - Debug: `build/debug/ClassicPanel.exe` (~290 KB)
+  - Release: `build/release/ClassicPanel.exe` (~2.6 MB, framework-dependent)
 - Use `GenerateAssemblyInfo=false` when redirecting output paths to avoid duplicate assembly attributes
 
 ## Technology Stack
@@ -27,10 +27,12 @@ ClassicPanel is a comprehensive, fast, intuitive, and beautiful Control Panel re
 - **Language**: C# 14
 - **UI Framework**: Windows Forms (WinForms)
 - **Target OS**: Windows 10 and Windows 11 (x64 only)
-- **Deployment**: Self-contained single-file executable with ReadyToRun (includes .NET runtime bundled inside - no separate .NET installation required for end users; ReadyToRun pre-compiles code for faster startup)
+- **Deployment**: Framework-dependent executable with ReadyToRun + Quick JIT (requires .NET 10 runtime - installer can bundle .NET runtime; ReadyToRun pre-compiles code at build time, Quick JIT handles dynamic code at runtime for faster startup)
 
 ## Architecture Principles
-- .NET runtime with ReadyToRun (no Native AOT)
+- .NET runtime with ReadyToRun + Quick JIT (no Native AOT)
+- ReadyToRun: Pre-compiles code at build time for instant execution
+- Quick JIT: Fast compilation for dynamic/reflection code at runtime (Tier 0), then recompiles hot paths with full optimization (Tier 1)
 - Full WinForms compatibility (no trimming restrictions)
 - All .NET features available (reflection, dynamic types, etc.)
 - Multi-framework architecture support (WinForms default, WPF optional, C++ extensions)
@@ -60,13 +62,9 @@ cd src
 dotnet build -c Release -p:GenerateAssemblyInfo=false
 dotnet build -c Debug -p:GenerateAssemblyInfo=false
 
-# Publish (self-contained single-file with ReadyToRun)
-dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
-
 # Run builds
-.\build\debug\net10.0-windows\win-x64\ClassicPanel.exe
-.\build\release\net10.0-windows\win-x64\ClassicPanel.exe
-.\build\publish\ClassicPanel.exe
+.\build\debug\ClassicPanel.exe
+.\build\release\ClassicPanel.exe
 ```
 
 ## Testing & Verification Workflow
@@ -84,17 +82,18 @@ dotnet build -c Release -p:GenerateAssemblyInfo=false
 **After completing a set of tasks (before commit):**
 ```bash
 cd src
-# Publish self-contained executable (what users get)
-dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+# Build Debug and Release (compilation check)
+dotnet build -c Debug -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Test Published build (CRITICAL - this is what users get)
-.\build\publish\ClassicPanel.exe
+# Test Debug build (for development testing)
+.\build\debug\ClassicPanel.exe
 ```
 
 **Rationale:**
 - Building Debug/Release catches compilation errors quickly (~1-3 seconds each)
-- If compilation succeeds, Debug/Release will run correctly (no need to test them)
-- Published build is what users get - focus testing here
+- Debug build is faster to test during development
+- Release build is what users get - test it before major releases
 - Saves time while ensuring quality
 
 See `docs/dev/build-test-workflow.md` for detailed workflow recommendations.
@@ -116,9 +115,10 @@ See `docs/dev/build-test-workflow.md` for detailed workflow recommendations.
 - The user can manually push later with: `git push origin main`
 
 ## Remember
-- **ReadyToRun ENABLED** - Pre-compiles code for faster startup (full .NET compatibility)
-- **NO Native AOT** - ReadyToRun enabled for faster startup (full .NET compatibility, no trimming restrictions)
-- Build outputs to `build/` directory (subdirectories: `debug/net10.0-windows/win-x64/`, `release/net10.0-windows/win-x64/`, `publish/`)
-- Published executable is self-contained (~122 MB) - includes .NET runtime
-- Always test published build - this is what end users receive
+- **ReadyToRun ENABLED** - Pre-compiles code at build time for instant execution (full .NET compatibility)
+- **Quick JIT ENABLED** - Fast compilation for dynamic code at runtime, then recompiles hot paths with full optimization
+- **NO Native AOT** - ReadyToRun + Quick JIT enabled for faster startup (full .NET compatibility, no trimming restrictions)
+- Build outputs to `build/` directory (subdirectories: `debug/net10.0-windows/win-x64/`, `release/`)
+- Release executable is framework-dependent (~2.6 MB) - requires .NET 10 runtime (installer can bundle .NET runtime)
+- Test Debug build during development, test Release build before major releases
 - Full .NET feature support (reflection, dynamic types, etc. all work)

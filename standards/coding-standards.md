@@ -4,7 +4,9 @@
 - **Language**: C# 14
 - **Framework**: .NET 10 (LTS)
 - **UI Framework**: Windows Forms (WinForms)
-- **Compilation**: ReadyToRun (Pre-compiled for faster startup, full .NET compatibility)
+- **Compilation**: ReadyToRun + Quick JIT
+  - **ReadyToRun**: Pre-compiles code at build time for instant execution (full .NET compatibility)
+  - **Quick JIT**: Fast compilation for dynamic code at runtime (Tier 0), then recompiles hot paths with full optimization (Tier 1)
 
 ## Code Style
 
@@ -105,8 +107,8 @@ ClassicPanel
 ### Build Considerations
 - Use `NativeLibrary.Load` instead of `[DllImport]` for dynamic loading (already implemented)
 - Prefer value types over reference types when appropriate for performance
-- Test Release builds with ReadyToRun to verify functionality and startup performance
-- Full .NET compatibility - ReadyToRun maintains full support for reflection and dynamic types
+- Test Release builds with ReadyToRun + Quick JIT to verify functionality and startup performance
+- Full .NET compatibility - ReadyToRun + Quick JIT maintains full support for reflection and dynamic types
 
 ### UI Performance
 - Avoid blocking the UI thread

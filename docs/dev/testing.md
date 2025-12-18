@@ -85,7 +85,7 @@ public class CplLoaderTests
 
 ## Release Build Testing
 
-**Important**: Always test with all builds, especially the published build before releases.
+**Important**: Always test with Debug build during development, and test Release build before major releases.
 
 ```bash
 cd src
@@ -94,25 +94,22 @@ cd src
 dotnet build -c Debug -p:GenerateAssemblyInfo=false
 dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Publish self-contained executable
-dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+# Build Debug and Release (framework-dependent executables)
+dotnet build -c Debug -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Test Debug build
-.\build\debug\net10.0-windows\win-x64\ClassicPanel.exe
+# Test Debug build (for development testing)
+.\build\debug\ClassicPanel.exe
 
-# Test Release build
-.\build\release\net10.0-windows\win-x64\ClassicPanel.exe
-
-# Test Published build (MOST IMPORTANT - this is what users get)
-.\build\publish\ClassicPanel.exe
+# Test Release build (before major releases)
+.\build\release\ClassicPanel.exe
 ```
 
 **Build Locations:**
-- Debug: `build/debug/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-- Release: `build/release/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-- Published: `build/publish/ClassicPanel.exe` (~122 MB, self-contained with ReadyToRun)
+- Debug: `build/debug/ClassicPanel.exe` (~290 KB)
+- Release: `build/release/ClassicPanel.exe` (~2.6 MB, framework-dependent with ReadyToRun + Quick JIT)
 
-The published build creates a self-contained single-file executable with ReadyToRun that matches the distribution build. ReadyToRun pre-compiles code for faster startup.
+The Release build uses ReadyToRun + Quick JIT for optimal startup performance. ReadyToRun pre-compiles code at build time for instant execution, while Quick JIT provides fast compilation for dynamic code at runtime.
 
 ## Test Checklist
 
@@ -122,7 +119,8 @@ Before committing:
 - [ ] Integration tests pass
 - [ ] Manual testing on Windows 10
 - [ ] Manual testing on Windows 11
-- [ ] Test with Release build (self-contained single file with ReadyToRun)
+- [ ] Test with Debug build (for development testing)
+- [ ] Test with Release build (before major releases)
 - [ ] Test error cases
 - [ ] Test with various .cpl files
 

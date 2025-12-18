@@ -19,30 +19,49 @@ public class ModernToolStripRenderer : ToolStripProfessionalRenderer
         }
 
         var rect = new Rectangle(Point.Empty, e.Item.Size);
-        var theme = ClassicPanel.Core.Theme.ThemeManager.CurrentThemeData;
+        const int borderRadius = 2; // 2px border radius
 
         if (button.Selected || button.Pressed)
         {
-            using (var brush = new SolidBrush(theme.HoverBackgroundColor))
-            {
-                e.Graphics.FillRoundedRectangle(brush, rect, 4);
-            }
-        }
+            // Determine if we're in dark mode or light mode
+            var isDarkMode = string.Equals(
+                ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(),
+                ClassicPanel.Core.AppConstants.DarkTheme,
+                StringComparison.OrdinalIgnoreCase);
 
-        // Draw border on hover
-        if (button.Selected && !button.Pressed)
-        {
-            using (var pen = new Pen(theme.BorderColor, 1))
+            // Button hover background: #282828 for dark mode, #F6F6F6 for light mode
+            var hoverBackground = isDarkMode
+                ? Color.FromArgb(0x28, 0x28, 0x28)  // Dark mode: #282828
+                : Color.FromArgb(0xF6, 0xF6, 0xF6); // Light mode: #F6F6F6
+
+            using (var brush = new SolidBrush(hoverBackground))
             {
-                e.Graphics.DrawRoundedRectangle(pen, rect, 4);
+                // Fill with rounded corners
+                e.Graphics.FillRoundedRectangle(brush, rect, borderRadius);
             }
         }
     }
 
+    protected override void OnRenderItemImage(ToolStripItemImageRenderEventArgs e)
+    {
+        // Use default rendering - no color change on hover
+        base.OnRenderItemImage(e);
+    }
+
     protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)
     {
-        var theme = ClassicPanel.Core.Theme.ThemeManager.CurrentThemeData;
-        e.Graphics.Clear(theme.ControlBackgroundColor);
+        // Determine if we're in dark mode or light mode
+        var isDarkMode = string.Equals(
+            ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(),
+            ClassicPanel.Core.AppConstants.DarkTheme,
+            StringComparison.OrdinalIgnoreCase);
+
+        // Toolbar background: #191919 for dark mode, #FFFFFF for light mode
+        var toolbarBackground = isDarkMode
+            ? Color.FromArgb(0x19, 0x19, 0x19)  // Dark mode: #191919
+            : Color.FromArgb(0xFF, 0xFF, 0xFF); // Light mode: #FFFFFF
+
+        e.Graphics.Clear(toolbarBackground);
         
         // Don't draw default borders - we handle this in the custom control
         // The background is already cleared, so no additional rendering needed
@@ -57,9 +76,18 @@ public class ModernToolStripRenderer : ToolStripProfessionalRenderer
 
     protected override void OnRenderToolStripPanelBackground(ToolStripPanelRenderEventArgs e)
     {
-        // Override to prevent default panel background rendering
-        var theme = ClassicPanel.Core.Theme.ThemeManager.CurrentThemeData;
-        e.Graphics.Clear(theme.ControlBackgroundColor);
+        // Determine if we're in dark mode or light mode
+        var isDarkMode = string.Equals(
+            ClassicPanel.Core.Theme.ThemeManager.GetEffectiveTheme(),
+            ClassicPanel.Core.AppConstants.DarkTheme,
+            StringComparison.OrdinalIgnoreCase);
+
+        // Toolbar background: #191919 for dark mode, #FFFFFF for light mode
+        var toolbarBackground = isDarkMode
+            ? Color.FromArgb(0x19, 0x19, 0x19)  // Dark mode: #191919
+            : Color.FromArgb(0xFF, 0xFF, 0xFF); // Light mode: #FFFFFF
+
+        e.Graphics.Clear(toolbarBackground);
     }
 
     protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
@@ -89,10 +117,10 @@ public class ModernToolStripRenderer : ToolStripProfessionalRenderer
         
         using (var pen = new Pen(separatorColor, 1))
         {
-            // Center the separator vertically with proper margins
+            // Center the separator vertically with proper margins (spacing already handled by Margin property)
             var centerX = rect.Left + rect.Width / 2;
-            var top = rect.Top + 6;
-            var bottom = rect.Bottom - 6;
+            var top = rect.Top + 8; // Top margin
+            var bottom = rect.Bottom - 8; // Bottom margin
             e.Graphics.DrawLine(pen, centerX, top, centerX, bottom);
         }
     }

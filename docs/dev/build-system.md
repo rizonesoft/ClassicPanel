@@ -1,6 +1,6 @@
 # Build System
 
-ClassicPanel uses .NET 10 SDK with MSBuild for building applications with ReadyToRun compilation. Builds output to the `build/` directory.
+ClassicPanel uses .NET 10 SDK with MSBuild for building applications with ReadyToRun + Quick JIT compilation. Builds output to the `build/` directory.
 
 ## Prerequisites
 
@@ -16,8 +16,7 @@ ClassicPanel uses .NET 10 SDK with MSBuild for building applications with ReadyT
 
 ### Release
 - Optimized code
-- Single-file executable
-- Self-contained (includes .NET runtime bundled in the executable - end users do NOT need to install .NET separately)
+- Framework-dependent (requires .NET 10 runtime - installer can bundle .NET runtime)
 
 ## Building
 
@@ -40,19 +39,14 @@ dotnet build -c Release -p:OutputPath=..\build\release\ -p:IntermediateOutputPat
 dotnet run
 ```
 
-#### Publish (Self-Contained Single File with ReadyToRun)
+#### Build Release (Framework-Dependent with ReadyToRun)
 ```bash
-dotnet publish -c Release `
-  -p:PublishSingleFile=true `
-  -p:PublishReadyToRun=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true `
-  -p:SelfContained=true `
-  -p:RuntimeIdentifier=win-x64
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 ```
 
-Output will be in: `build/publish/`
+Output will be in: `build/release/`
 
-Or use the build script which automatically publishes Release builds:
+Or use the build script:
 ```bash
 .\build\build.bat Release
 ```
@@ -67,7 +61,7 @@ Or use the build script which automatically publishes Release builds:
 4. Build: `Ctrl+Shift+B` or `Build > Build Solution`
    - Automatically builds main app and all extensions
 5. Run: `F5` or `Debug > Start Debugging`
-6. Publish: Right-click ClassicPanel project → `Publish` (configure for self-contained single file with ReadyToRun)
+6. Build: Right-click ClassicPanel project → `Build` (Release configuration outputs to `build/release/`)
 
 ## Project File Configuration
 
@@ -82,68 +76,70 @@ Key settings in `ClassicPanel.csproj`:
 </PropertyGroup>
 ```
 
-**Note**: ClassicPanel uses .NET 10 with ReadyToRun compilation. `SelfContained`, `PublishSingleFile`, and `PublishReadyToRun` are specified during publish operations.
+**Note**: ClassicPanel uses .NET 10 with ReadyToRun + Quick JIT compilation. Both are enabled in the project file for Release builds.
 
 **Important Distinction:**
-- **`SelfContained=true`** - Includes the .NET runtime in the executable (end users do NOT need .NET installed). This is what makes ClassicPanel work without requiring .NET installation.
-- **`PublishReadyToRun=true`** - Enabled optimization that pre-compiles code to native format for faster startup. ReadyToRun maintains full .NET compatibility - all features work (reflection, dynamic types, etc.).
+- **`SelfContained=false`** - Framework-dependent deployment (requires .NET 10 runtime). The installer can bundle the .NET 10 runtime installer for automatic installation.
+- **ReadyToRun** - Pre-compiles code at build time to native format for instant execution. ReadyToRun maintains full .NET compatibility - all features work (reflection, dynamic types, etc.).
+- **Quick JIT** - Fast compilation for dynamic/reflection code at runtime (Tier 0), then recompiles frequently used methods with full optimization (Tier 1). Works alongside ReadyToRun to optimize startup performance.
 
 All .NET features are fully supported (reflection, dynamic types, etc.).
 
 ## Build Output
 
 ### Standard Build
-- **Debug**: `build/debug/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
+- **Debug**: `build/debug/ClassicPanel.exe` (~290 KB)
   - Includes debug symbols (`.pdb` files)
   - All runtime DLLs in same directory
   - Intermediate files: `build/obj/debug/`
-- **Release**: `build/release/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-  - Optimized code
+- **Release**: `build/release/ClassicPanel.exe` (~2.6 MB)
+  - Optimized code with ReadyToRun + Quick JIT
+  - ReadyToRun pre-compiles code at build time
+  - Quick JIT handles dynamic code at runtime
   - All runtime DLLs in same directory
   - Intermediate files: `build/obj/release/`
 
-**Note**: Standard builds output to TFM/RID subdirectories (`net10.0-windows/win-x64/`). This is standard .NET behavior. The executables are framework-dependent and require .NET 10 runtime to be installed.
+**Note**: Debug builds output to TFM/RID subdirectories (`net10.0-windows/win-x64/`). Release builds output directly to `build/release/` as configured in `Directory.Build.props`. The executables are framework-dependent and require .NET 10 runtime to be installed.
 
-### Self-Contained Publish
-- **Location**: `build/publish/ClassicPanel.exe`
-- **Size**: ~122 MB (includes entire .NET runtime bundled inside + ReadyToRun pre-compiled code)
-- **Contains**: Single `.exe` file (self-contained, includes .NET runtime bundled inside)
-- **End Users**: Do NOT need to install .NET separately - the runtime is included in the executable
-- **ReadyToRun**: Enabled for faster startup - pre-compiles code to native format
+**Release Build Details:**
+- **Size**: ~2.6 MB (executable) + ~11 MB (SkiaSharp native DLL) = ~14 MB total
+- **Contains**: Executable and DLLs (framework-dependent, requires .NET 10 runtime)
+- **End Users**: Need .NET 10 runtime installed (installer can bundle .NET runtime installer)
+- **ReadyToRun**: Enabled for faster startup - pre-compiles code to native format at build time
+- **Quick JIT**: Enabled for faster startup - fast compilation for dynamic code at runtime, then recompiles hot paths with full optimization
 - **Distribution**: This is the file you distribute to end users
 
 ## Build Scripts
 
-Build scripts are located in the `build/` directory and provide a convenient way to build and publish ClassicPanel.
+Build scripts are located in the `build/` directory and provide a convenient way to build ClassicPanel.
 
 ### build.bat (Windows)
 
-The Windows build script supports Debug and Release configurations with automatic publishing for Release builds.
+The Windows build script supports Debug and Release configurations.
 
 **Usage:**
 ```batch
 # Build Debug configuration
 .\build\build.bat Debug
 
-# Build Release configuration (automatically publishes)
+# Build Release configuration
 .\build\build.bat Release
 
-# Build Debug and force publish
-.\build\build.bat Debug --publish
+# Build Debug configuration
+.\build\build.bat Debug
 ```
 
 **Features:**
 - Supports Debug and Release configurations
-- Automatically publishes Release builds (self-contained with ReadyToRun)
-- Optional `--publish` flag to force publishing for any configuration
+- Builds Release configuration (framework-dependent with ReadyToRun)
 - Comprehensive error handling and validation
-- File size reporting for published executables
+- File size reporting for Release executables
 - Clear output messages and status reporting
 
 **Output:**
-- Debug builds: `build/debug/net10.0-windows/win-x64/ClassicPanel.exe`
-- Release builds: `build/release/net10.0-windows/win-x64/ClassicPanel.exe`
-- Published builds: `build/publish/ClassicPanel.exe` (~122 MB)
+- Debug builds: `build/debug/ClassicPanel.exe`
+- Release builds: `build/release/ClassicPanel.exe`
+- Release builds: `build/release/ClassicPanel.exe` (~2.6 MB)
 
 ### build.sh (Linux/macOS/Unix)
 
@@ -154,11 +150,11 @@ The cross-platform build script provides the same features as the Windows script
 # Build Debug configuration
 ./build/build.sh Debug
 
-# Build Release configuration (automatically publishes)
+# Build Release configuration
 ./build/build.sh Release
 
-# Build Debug and force publish
-./build/build.sh Debug --publish
+# Build Debug configuration
+./build/build.sh Debug
 ```
 
 **Features:**
@@ -203,8 +199,8 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Build
         run: dotnet build -c Release
-      - name: Publish
-        run: dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64
+      - name: Build Release
+        run: dotnet build -c Release -p:GenerateAssemblyInfo=false
 ```
 
 ## Distribution Builds
@@ -213,26 +209,26 @@ For distribution, create a release build:
 
 1. Clean previous builds
 2. Build in Release configuration
-3. Publish as self-contained single file with ReadyToRun
-4. Test the standalone executable from `build/publish/ClassicPanel.exe`
-5. Package with InnoSetup (see `build/installer/`)
+3. Build Release configuration (framework-dependent with ReadyToRun)
+4. Test the standalone executable from `build/release/ClassicPanel.exe`
+5. Package with InnoSetup (see `build/installer/`) - installer should check for and install .NET 10 runtime
 
 **Complete Distribution Build Workflow:**
 ```bash
 cd src
 dotnet build -c Release -p:GenerateAssemblyInfo=false
-dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 
-# Test the published executable
-.\build\publish\ClassicPanel.exe
+# Test the Release build
+.\build\release\ClassicPanel.exe
 ```
 
-The published executable is ready for distribution at `build/publish/ClassicPanel.exe` (~122 MB, self-contained, includes .NET runtime).
+The Release executable is ready for distribution at `build/release/ClassicPanel.exe` (~2.6 MB, framework-dependent, requires .NET 10 runtime).
 
 ## Extension Build Strategy
 
 **IMPORTANT**: ClassicPanel uses a hybrid deployment model:
-- **Main Application** (ClassicPanel.exe): Self-contained with ReadyToRun (~120 MB)
+- **Main Application** (ClassicPanel.exe): Framework-dependent with ReadyToRun (~2.6 MB, requires .NET 10 runtime)
 - **Extensions** (.cpl/.dll files): Framework-dependent (typically 50 KB - 5 MB each)
 
 Extensions **DO NOT** use self-contained deployment. They rely on the .NET runtime provided by the main ClassicPanel.exe application. This prevents having 100+ extensions each being 120 MB (which would total 12+ GB).
@@ -244,7 +240,7 @@ Extension projects are automatically configured by `Directory.Build.props`:
 - Extensions output to `system/` subfolder:
   - Debug: `build/debug/system/net10.0-windows/win-x64/ExtensionName.dll`
   - Release: `build/release/system/net10.0-windows/win-x64/ExtensionName.dll`
-  - Published: `build/publish/system/net10.0-windows/win-x64/ExtensionName.dll`
+  - Release: `build/release/system/ExtensionName.dll`
 - Extensions are automatically configured as framework-dependent (NOT self-contained)
 - Extensions use the runtime from the main ClassicPanel.exe
 
@@ -270,7 +266,7 @@ dotnet build -c Release -p:GenerateAssemblyInfo=false
 - `BuildExtensions` - Build all extensions
 - `CleanExtensions` - Clean all extensions
 - `RebuildExtensions` - Rebuild all extensions
-- `PublishExtensions` - Publish all extensions
+- `BuildExtensions` - Build all extensions (Release configuration)
 
 See [Extension Deployment Guide](extension-deployment.md) for detailed information on building extensions.
 

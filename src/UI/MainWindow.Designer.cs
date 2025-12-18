@@ -28,7 +28,7 @@ partial class MainWindow
     /// </summary>
     private void InitializeComponent()
     {
-        this.menuStrip = new System.Windows.Forms.MenuStrip();
+        this.menuStrip = new ClassicPanel.UI.ModernMenuStrip();
         this.toolStrip = new ClassicPanel.UI.ModernToolStrip();
         this.statusStrip = new System.Windows.Forms.StatusStrip();
         this.SuspendLayout();
@@ -45,7 +45,7 @@ partial class MainWindow
         // 
         this.toolStrip.Location = new System.Drawing.Point(0, 24);
         this.toolStrip.Name = "toolStrip";
-        this.toolStrip.Size = new System.Drawing.Size(800, 25);
+        this.toolStrip.Size = new System.Drawing.Size(800, 52);
         this.toolStrip.TabIndex = 1;
         this.toolStrip.Text = "toolStrip";
         // 
@@ -72,7 +72,7 @@ partial class MainWindow
         this.PerformLayout();
     }
 
-    private System.Windows.Forms.MenuStrip menuStrip;
+    private ClassicPanel.UI.ModernMenuStrip menuStrip;
     private ClassicPanel.UI.ModernToolStrip toolStrip;
     private System.Windows.Forms.StatusStrip statusStrip;
 

@@ -32,8 +32,9 @@ This section contains documentation for end users.
 
 ## System Requirements
 
-- Windows 10 or Windows 11
-- Self-contained executable with ReadyToRun (includes .NET runtime bundled in the file - no separate .NET installation required; ReadyToRun enables faster startup)
+- Windows 10 or Windows 11 (64-bit)
+- .NET 10 Runtime (installer can bundle it for automatic installation)
+- Framework-dependent executable with ReadyToRun + Quick JIT (smaller size, faster startup)
 
 ## Getting Help
 

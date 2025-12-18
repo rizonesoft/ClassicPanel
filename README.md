@@ -20,9 +20,9 @@ The application is built using .NET 10, resulting in a single, self-contained .e
 - **Framework**: .NET 10 (LTS)
 - **Language**: C# 14
 - **UI Framework**: Windows Forms (WinForms)
-- **Deployment**: Self-contained single-file executable with ReadyToRun (includes .NET runtime bundled inside - no separate .NET installation required for end users)
+- **Deployment**: Framework-dependent executable with ReadyToRun + Quick JIT (requires .NET 10 runtime - installer can bundle .NET runtime)
 
-**Note**: Self-contained deployment bundles the .NET runtime. ReadyToRun is enabled for faster startup - it pre-compiles code while maintaining full .NET compatibility.
+**Note**: Framework-dependent deployment requires .NET 10 runtime (installer can bundle .NET runtime). ReadyToRun pre-compiles code at build time for instant execution, while Quick JIT provides fast compilation for dynamic code at runtime. Both work together to optimize startup performance while maintaining full .NET compatibility.
 
 ## Platform Requirements
 
@@ -44,8 +44,8 @@ ClassicPanel automatically validates platform requirements on startup and displa
   - Light/Dark/High Contrast themes
 - **Multiple View Modes**: Large Icons, Small Icons, List, and Details views
 - **Complete Control Panel Items**: All Windows XP/7/8/10 Control Panel items including Hardware, Security, System, Network, Programs, Appearance, and more
-- **Portable**: Single-file executable, no installation required
-- **Self-Contained**: Includes .NET runtime bundled in the executable - users do NOT need to install .NET separately
+- **Portable**: Single executable with dependencies, no installation required
+- **Framework-Dependent**: Requires .NET 10 runtime (installer can bundle .NET runtime for automatic installation)
 - **Extensible**: CPL extension system for developers
 
 ## Building
@@ -75,13 +75,12 @@ ClassicPanel automatically validates platform requirements on startup and displa
 ```bash
 cd src
 dotnet build -c Release -p:GenerateAssemblyInfo=false
-dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 ```
 
 **Build Outputs:**
-- Debug: `build/debug/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-- Release: `build/release/net10.0-windows/win-x64/ClassicPanel.exe` (~290 KB)
-- Published: `build/publish/ClassicPanel.exe` (~122 MB, self-contained with ReadyToRun)
+- Debug: `build/debug/ClassicPanel.exe` (~290 KB)
+- Release: `build/release/ClassicPanel.exe` (~2.6 MB, framework-dependent with ReadyToRun)
 
 ## Project Structure
 
@@ -96,9 +95,7 @@ ClassicPanel/
 │   ├── debug/             # Debug build output
 │   │   └── net10.0-windows/win-x64/ClassicPanel.exe (~290 KB)
 │   ├── release/           # Release build output
-│   │   └── net10.0-windows/win-x64/ClassicPanel.exe (~290 KB)
-│   └── publish/           # Published executable (self-contained)
-│       └── ClassicPanel.exe (~122 MB)
+│   │   └── ClassicPanel.exe (~2.6 MB)
 ├── resources/             # Additional resources
 │   └── installer/         # Installation script templates
 ├── docs/                  # Documentation

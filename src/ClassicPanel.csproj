@@ -48,6 +48,13 @@
     <ApplicationManifest>Resources\ClassicPanel.manifest</ApplicationManifest>
     <!-- Suppress CA1416 warnings - ClassicPanel is Windows-only, all Windows Forms APIs are valid -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
+    
+    <!-- Enable Tiered Compilation and Quick JIT for faster startup -->
+    <!-- Tiered compilation is enabled by default in .NET Core 3.0+, but we explicitly enable it for clarity -->
+    <!-- Quick JIT (Tier 0) compiles methods quickly during startup, then recompiles hot paths with full optimization (Tier 1) -->
+    <!-- This works alongside ReadyToRun: ReadyToRun pre-compiles code at build time, Quick JIT handles dynamic/reflection code -->
+    <TieredCompilation>true</TieredCompilation>
+    <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
   </PropertyGroup>
 
   <ItemGroup>

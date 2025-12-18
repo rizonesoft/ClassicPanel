@@ -32,7 +32,7 @@ ClassicPanel brings back that classic interface with significant improvements, a
 - **Comprehensive**: All Windows Control Panel items (Hardware, Security, System, Network, Programs, Appearance, Mobile, Backup, and more)
 - **Fast Performance**: Sub-second startup, optimized for speed and responsiveness
 - **Portable**: Single executable file, no installation needed
-- **Standalone**: .NET runtime is bundled in the executable with ReadyToRun for faster startup - no separate .NET installation needed
+- **Framework-Dependent**: Requires .NET 10 runtime (installer can bundle it). Uses ReadyToRun + Quick JIT for faster startup - ReadyToRun pre-compiles code at build time, Quick JIT handles dynamic code at runtime
 - **Extensible**: CPL extension system for developers to add custom applets
 
 ## System Requirements

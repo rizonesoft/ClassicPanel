@@ -1,5 +1,9 @@
 # Installation Guide
 
+## Prerequisites
+
+ClassicPanel requires **.NET 10 Runtime** to be installed on your system. The installer can automatically install it if it's not already present.
+
 ## Portable Installation (Recommended)
 
 ClassicPanel is a portable application and doesn't require installation.
@@ -8,7 +12,8 @@ ClassicPanel is a portable application and doesn't require installation.
 
 1. **Download** ClassicPanel from the releases page
 2. **Extract** the ZIP file to your desired location (e.g., `C:\Programs\ClassicPanel\`)
-3. **Run** `ClassicPanel.exe`
+3. **Ensure .NET 10 Runtime is installed** (download from Microsoft if needed)
+4. **Run** `ClassicPanel.exe`
 
 That's it! ClassicPanel is ready to use.
 

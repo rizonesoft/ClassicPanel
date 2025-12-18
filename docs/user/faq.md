@@ -22,14 +22,14 @@ Windows 10 and Windows 11 (64-bit).
 
 ### Do I need to install .NET?
 
-**No!** ClassicPanel is a **self-contained** executable, which means the .NET runtime is **bundled inside** the executable file. You do **NOT** need to install .NET separately on your system. Just download and run ClassicPanel.exe - it works immediately without any additional software.
+**Yes, you need .NET 10 Runtime installed.** ClassicPanel is a **framework-dependent** application, which means it requires the .NET 10 runtime to be installed on your system. The installer can automatically install it if it's not already present.
 
-**What does "self-contained" mean?**
-- The .NET runtime is included inside the ClassicPanel.exe file (~110 MB)
-- When you run ClassicPanel, it uses the bundled .NET runtime
-- No separate .NET installation is needed on your computer
+**What does "framework-dependent" mean?**
+- ClassicPanel.exe is small (~2.6 MB) and requires .NET 10 runtime
+- The .NET 10 runtime must be installed separately (or via the installer)
+- The installer can bundle the .NET 10 runtime installer for automatic installation
 
-**Note**: ClassicPanel uses both self-contained deployment (runtime included) and ReadyToRun (performance optimization that pre-compiles code for faster startup).
+**Note**: ClassicPanel uses ReadyToRun + Quick JIT for optimal startup performance. ReadyToRun pre-compiles code at build time for instant execution, while Quick JIT provides fast compilation for dynamic code at runtime. Both maintain full .NET compatibility.
 
 ### Can I run ClassicPanel from a USB drive?
 

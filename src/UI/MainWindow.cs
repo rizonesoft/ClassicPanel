@@ -24,6 +24,112 @@ public partial class MainWindow : Form
             UpdateThemeToggleButton();
         };
     }
+    
+    /// <summary>
+    /// Initializes the toolbar structure. Icons are loaded after window is shown to prevent startup delay.
+    /// </summary>
+    private void InitializeToolbar()
+    {
+        const int buttonSize = 52; // 52x52px buttons
+        toolStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
+        
+        // Create buttons with placeholder icons (will be loaded after window is shown)
+        var refreshButton = new ToolStripButton("Refresh", null, (s, e) => RefreshItems())
+        {
+            ToolTipText = "Refresh (F5)",
+            Tag = "refresh.svg",
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None,
+            AutoSize = false, // Disable auto-sizing to enforce exact button size
+            Size = new System.Drawing.Size(buttonSize, buttonSize),
+            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+        };
+        toolStrip.Items.Add(refreshButton);
+        
+        var separator1 = new ToolStripSeparator();
+        separator1.Margin = new Padding(8, 0, 8, 0);
+        toolStrip.Items.Add(separator1);
+        
+        var largeIconsButton = new ToolStripButton("Large Icons", null, (s, e) => SetViewMode("LargeIcons"))
+        {
+            ToolTipText = "Large Icons",
+            Tag = "view-large.svg",
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None,
+            AutoSize = false, // Disable auto-sizing to enforce exact button size
+            Size = new System.Drawing.Size(buttonSize, buttonSize),
+            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+        };
+        toolStrip.Items.Add(largeIconsButton);
+        
+        var smallIconsButton = new ToolStripButton("Small Icons", null, (s, e) => SetViewMode("SmallIcons"))
+        {
+            ToolTipText = "Small Icons",
+            Tag = "view-small.svg",
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None,
+            AutoSize = false, // Disable auto-sizing to enforce exact button size
+            Size = new System.Drawing.Size(buttonSize, buttonSize),
+            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+        };
+        toolStrip.Items.Add(smallIconsButton);
+        
+        var listButton = new ToolStripButton("List", null, (s, e) => SetViewMode("List"))
+        {
+            ToolTipText = "List",
+            Tag = "view-list.svg",
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None,
+            AutoSize = false, // Disable auto-sizing to enforce exact button size
+            Size = new System.Drawing.Size(buttonSize, buttonSize),
+            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+        };
+        toolStrip.Items.Add(listButton);
+        
+        var detailsButton = new ToolStripButton("Details", null, (s, e) => SetViewMode("Details"))
+        {
+            ToolTipText = "Details",
+            Tag = "view-details.svg",
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            ImageScaling = ToolStripItemImageScaling.None,
+            AutoSize = false, // Disable auto-sizing to enforce exact button size
+            Size = new System.Drawing.Size(buttonSize, buttonSize),
+            Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
+        };
+        toolStrip.Items.Add(detailsButton);
+        
+        var separator2 = new ToolStripSeparator();
+        separator2.Margin = new Padding(8, 0, 8, 0);
+        toolStrip.Items.Add(separator2);
+        
+        UpdateThemeToggleButton();
+        
+        // Load icons after window is shown to prevent blocking startup
+        // This prevents the 3-second delay on first run
+        this.Shown += (s, e) =>
+        {
+            BeginInvoke(new Action(LoadToolbarIcons));
+        };
+    }
+    
+    /// <summary>
+    /// Loads icons for toolbar buttons. Called after window is shown to avoid blocking startup.
+    /// </summary>
+    private void LoadToolbarIcons()
+    {
+        var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+        const int iconSize = 32; // 32x32px icons
+
+        // Load icons for all buttons
+        foreach (ToolStripItem item in toolStrip.Items)
+        {
+            if (item is ToolStripButton button && button.Tag is string fileName)
+            {
+                var icon = SvgFileLoader.RenderSvgFileThemed(fileName, iconSize, isDarkMode);
+                button.Image = icon;
+            }
+        }
+    }
 
     protected override void OnLoad(EventArgs e)
     {
@@ -224,80 +330,6 @@ public partial class MainWindow : Form
         menuStrip.Items.Add(helpMenu);
     }
 
-    /// <summary>
-    /// Initializes the toolbar with SVG icons.
-    /// </summary>
-    private void InitializeToolbar()
-    {
-        var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
-        const int iconSize = 32; // 32x32px icons
-
-        // Configure toolbar appearance (renderer is set in ModernToolStrip constructor)
-        toolStrip.ImageScalingSize = new System.Drawing.Size(iconSize, iconSize);
-
-        // Refresh button - load from SVG file using SkiaSharp
-        var refreshIcon = SvgFileLoader.RenderSvgFileThemed("refresh.svg", iconSize, isDarkMode);
-        if (refreshIcon == null || (refreshIcon.Width == iconSize && refreshIcon.Height == iconSize && IsBitmapBlank(refreshIcon)))
-        {
-            System.Diagnostics.Debug.WriteLine("[MainWindow] Refresh icon is blank or null!");
-        }
-        var refreshButton = new ToolStripButton("Refresh", refreshIcon, (s, e) => RefreshItems())
-        {
-            ToolTipText = "Refresh (F5)",
-            Tag = "refresh.svg", // Store file name for theme updates
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ImageScaling = ToolStripItemImageScaling.None
-        };
-        toolStrip.Items.Add(refreshButton);
-
-        toolStrip.Items.Add(new ToolStripSeparator());
-
-        // View mode buttons
-        var largeIconsIcon = SvgIconRenderer.RenderSvgIconThemed(SvgIcons.LargeIcons, iconSize, isDarkMode);
-        var largeIconsButton = new ToolStripButton("Large Icons", largeIconsIcon, (s, e) => SetViewMode("LargeIcons"))
-        {
-            ToolTipText = "Large Icons",
-            Tag = SvgIcons.LargeIcons,
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ImageScaling = ToolStripItemImageScaling.None
-        };
-        toolStrip.Items.Add(largeIconsButton);
-
-        var smallIconsIcon = SvgIconRenderer.RenderSvgIconThemed(SvgIcons.SmallIcons, iconSize, isDarkMode);
-        var smallIconsButton = new ToolStripButton("Small Icons", smallIconsIcon, (s, e) => SetViewMode("SmallIcons"))
-        {
-            ToolTipText = "Small Icons",
-            Tag = SvgIcons.SmallIcons,
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ImageScaling = ToolStripItemImageScaling.None
-        };
-        toolStrip.Items.Add(smallIconsButton);
-
-        var listIcon = SvgIconRenderer.RenderSvgIconThemed(SvgIcons.List, iconSize, isDarkMode);
-        var listButton = new ToolStripButton("List", listIcon, (s, e) => SetViewMode("List"))
-        {
-            ToolTipText = "List",
-            Tag = SvgIcons.List,
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ImageScaling = ToolStripItemImageScaling.None
-        };
-        toolStrip.Items.Add(listButton);
-
-        var detailsIcon = SvgIconRenderer.RenderSvgIconThemed(SvgIcons.Details, iconSize, isDarkMode);
-        var detailsButton = new ToolStripButton("Details", detailsIcon, (s, e) => SetViewMode("Details"))
-        {
-            ToolTipText = "Details",
-            Tag = SvgIcons.Details,
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ImageScaling = ToolStripItemImageScaling.None
-        };
-        toolStrip.Items.Add(detailsButton);
-
-        toolStrip.Items.Add(new ToolStripSeparator());
-
-        // Theme toggle button (only visible when system theme is disabled)
-        UpdateThemeToggleButton();
-    }
 
     /// <summary>
     /// Updates the theme toggle button visibility and icon based on current theme.
@@ -311,18 +343,22 @@ public partial class MainWindow : Form
         if (_themeToggleButton == null)
         {
             // Create theme toggle button
-            var iconData = isDarkMode ? SvgIcons.LightMode : SvgIcons.DarkMode;
-            var themeIcon = SvgIconRenderer.RenderSvgIconThemed(iconData, iconSize, isDarkMode);
+            const int buttonSize = 52; // 52x52px buttons
+            var fileName = isDarkMode ? "theme-light.svg" : "theme-dark.svg";
+            // Icon will be loaded by LoadToolbarIcons() after window is shown
             _themeToggleButton = new ToolStripButton(
                 isDarkMode ? "Light Mode" : "Dark Mode",
-                themeIcon,
+                null,
                 (s, e) => ToggleTheme()
             )
             {
                 ToolTipText = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode",
-                Tag = iconData, // Store SVG icon data for theme updates
+                Tag = fileName, // Store file name for theme updates
                 DisplayStyle = ToolStripItemDisplayStyle.Image,
-                ImageScaling = ToolStripItemImageScaling.None
+                ImageScaling = ToolStripItemImageScaling.None,
+                AutoSize = false, // Disable auto-sizing to enforce exact button size
+                Size = new System.Drawing.Size(buttonSize, buttonSize),
+                Margin = new Padding(2, 0, 2, 0) // Add spacing between buttons
             };
             toolStrip.Items.Add(_themeToggleButton);
         }
@@ -333,10 +369,10 @@ public partial class MainWindow : Form
         if (!isSystemTheme)
         {
             // Update icon and text
-            var iconData = isDarkMode ? SvgIcons.LightMode : SvgIcons.DarkMode;
-            var newIcon = SvgIconRenderer.RenderSvgIconThemed(iconData, iconSize, isDarkMode);
+            var fileName = isDarkMode ? "theme-light.svg" : "theme-dark.svg";
+            var newIcon = SvgFileLoader.RenderSvgFileThemed(fileName, iconSize, isDarkMode);
             _themeToggleButton.Image = newIcon;
-            _themeToggleButton.Tag = iconData;
+            _themeToggleButton.Tag = fileName;
             _themeToggleButton.Text = isDarkMode ? "Light Mode" : "Dark Mode";
             _themeToggleButton.ToolTipText = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode";
         }

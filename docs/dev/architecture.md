@@ -10,7 +10,8 @@ ClassicPanel is a Windows Forms application built with .NET 10 and C# 14. It rep
 - **.NET 10** (LTS) - Runtime and base libraries
 - **C# 14** - Programming language
 - **Windows Forms** - UI framework (default)
-- **ReadyToRun** - Pre-compiled code for faster startup with full .NET compatibility
+- **ReadyToRun** - Pre-compiles code at build time for instant execution
+- **Quick JIT** - Fast compilation for dynamic code at runtime (Tier 0), then recompiles hot paths with full optimization (Tier 1)
 - **P/Invoke** - Interop with Windows Control Panel API
 
 ### Supported Alternative Frameworks
@@ -306,11 +307,12 @@ The project file enforces platform requirements:
 
 ## Build Considerations
 
-- **ReadyToRun Enabled**: Code is pre-compiled to native format for faster startup
+- **ReadyToRun Enabled**: Code is pre-compiled to native format at build time for instant execution
+- **Quick JIT Enabled**: Fast compilation for dynamic code at runtime (Tier 0), then recompiles hot paths with full optimization (Tier 1)
 - **Dynamic Loading**: Use `NativeLibrary` instead of `[DllImport]` for dynamic loading (already implemented)
-- **Full Reflection Support**: All reflection features work normally (ReadyToRun compatible)
-- **Full .NET Compatibility**: ReadyToRun maintains full compatibility - no restrictions on language features
-- **Testing**: Test Release builds with ReadyToRun to verify functionality and startup performance
+- **Full Reflection Support**: All reflection features work normally (ReadyToRun + Quick JIT compatible)
+- **Full .NET Compatibility**: ReadyToRun + Quick JIT maintains full compatibility - no restrictions on language features
+- **Testing**: Test Debug builds during development, test Release builds with ReadyToRun + Quick JIT before major releases
 
 ## Future Enhancements
 

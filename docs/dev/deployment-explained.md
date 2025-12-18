@@ -1,8 +1,8 @@
-# Deployment Explained: Self-Contained vs ReadyToRun
+# Deployment Explained: Self-Contained vs ReadyToRun + Quick JIT
 
 ## Overview
 
-This document clarifies the difference between **self-contained deployment** and **ReadyToRun** compilation, as they are often confused.
+This document clarifies the difference between **self-contained deployment**, **ReadyToRun** compilation, and **Quick JIT**, as they are often confused.
 
 ## Self-Contained Deployment
 
@@ -16,16 +16,27 @@ This document clarifies the difference between **self-contained deployment** and
 - With `PublishSingleFile=true`, everything is bundled into a single `.exe` file
 - The runtime is extracted at runtime (or embedded, depending on configuration)
 
-**ClassicPanel Configuration:**
+**ClassicPanel Configuration (Previous - Self-Contained):**
 ```xml
 SelfContained=true
 PublishSingleFile=true
 RuntimeIdentifier=win-x64
 ```
 
+**ClassicPanel Configuration (Current - Framework-Dependent):**
+```xml
+SelfContained=false
+PublishReadyToRun=true
+RuntimeIdentifier=win-x64
+PublishDir=..\build\release\
+AppendTargetFrameworkToOutputPath=false
+AppendRuntimeIdentifierToOutputPath=false
+```
+
 **Result:**
-- Single executable (~110 MB) that includes the entire .NET runtime
-- Users can run it on any Windows 10/11 64-bit system without installing .NET
+- Executable (~2.6 MB) that requires .NET 10 runtime
+- Installer can bundle .NET 10 runtime installer for automatic installation
+- Users need .NET 10 runtime installed (can be installed via installer)
 
 ## ReadyToRun (R2R) Compilation
 
@@ -43,6 +54,23 @@ RuntimeIdentifier=win-x64
 - Pre-compiled code reduces JIT compilation overhead at startup
 - Code is pre-compiled to native format at build time
 - Faster startup performance with full .NET feature support
+
+## Quick JIT (Tiered Compilation)
+
+**What it is:**
+- Part of .NET's **tiered compilation** system
+- Fast compilation for methods not pre-compiled by ReadyToRun
+- Enabled by default in .NET Core 3.0+ (including .NET 10)
+
+**How it works:**
+- **Tier 0 (Quick JIT)**: Fast, less optimized compilation for initial method execution
+- **Tier 1 (Full JIT)**: Recompiles frequently used methods with full optimizations
+- Works alongside ReadyToRun: ReadyToRun handles pre-compiled code, Quick JIT handles dynamic/reflection code
+
+**ClassicPanel uses Quick JIT:**
+- Fast compilation for dynamic code paths (reflection, generics, etc.)
+- Hot paths get recompiled with full optimization automatically
+- Works seamlessly with ReadyToRun for optimal startup performance
 
 ## Key Differences
 
@@ -66,15 +94,22 @@ RuntimeIdentifier=win-x64
 
 ## Summary
 
-✅ **Self-Contained = Runtime Included (users don't need .NET installed)**
+✅ **Framework-Dependent = Requires .NET Runtime (users need .NET installed)**
 - This is what ClassicPanel uses
-- Makes the app standalone and portable
+- Smaller application size (~2.6 MB vs ~120 MB)
+- Installer can bundle .NET runtime for automatic installation
 
 ✅ **ReadyToRun = Performance Optimization (ENABLED)**
 - ClassicPanel uses this for faster startup
 - Pre-compiles code to native format at build time
 - Reduces JIT compilation overhead at runtime
 - Still maintains full .NET compatibility
+
+✅ **Quick JIT = Runtime Performance Optimization (ENABLED)**
+- ClassicPanel uses this alongside ReadyToRun
+- Fast compilation for dynamic code at runtime (Tier 0)
+- Recompiles hot paths with full optimization (Tier 1)
+- Works seamlessly with ReadyToRun for optimal startup performance
 
 ## Visual Comparison
 
@@ -86,12 +121,14 @@ Application.exe (small, ~1-5 MB)
 ```
 
 
-### Self-Contained + ReadyToRun (ClassicPanel Configuration)
+### Framework-Dependent + ReadyToRun (ClassicPanel Configuration)
 ```
-Application.exe (large, ~115-120 MB, includes .NET runtime)
+Application.exe (small, ~2.6 MB, requires .NET 10 runtime)
 + Pre-compiled native code (ReadyToRun)
-= No .NET installation required ✅
++ .NET 10 runtime (installed separately or via installer)
+= Smaller application size ✅
 = Faster startup (pre-compiled code runs immediately)
+= Installer can bundle .NET runtime for automatic installation
 ```
 
 ## Performance Considerations

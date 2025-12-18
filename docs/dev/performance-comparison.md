@@ -2,11 +2,12 @@
 
 ## Quick Answer
 
-**For ClassicPanel: Self-contained + ReadyToRun is the FASTEST option** because:
-1. ✅ ReadyToRun pre-compiles code (eliminates JIT overhead)
-2. ✅ No .NET installation requirement (better user experience)
-3. ✅ Sub-second startup target achieved
-4. ✅ Portable - works anywhere
+**For ClassicPanel: Framework-dependent + ReadyToRun + Quick JIT is the OPTIMAL option** because:
+1. ✅ ReadyToRun pre-compiles code at build time (eliminates JIT overhead for pre-compiled methods)
+2. ✅ Quick JIT provides fast compilation for dynamic code at runtime (Tier 0), then recompiles hot paths with full optimization (Tier 1)
+3. ✅ Smaller application size (~2.6 MB vs ~120 MB)
+4. ✅ Sub-second startup target achieved
+5. ✅ Installer can bundle .NET runtime for automatic installation
 
 ## Detailed Comparison
 
@@ -44,23 +45,26 @@
 **Startup Time:**
 - ~1000-2000ms (extraction + JIT compilation)
 
-### Self-Contained + ReadyToRun (ClassicPanel's Choice)
+### Framework-Dependent + ReadyToRun + Quick JIT (ClassicPanel's Choice)
 
 **How it works:**
-- App executable: ~120 MB (includes .NET runtime + pre-compiled code)
-- No .NET installation needed
-- Runtime extracted/loaded from executable
-- Code is pre-compiled to native format
+- App executable: ~2.6 MB (pre-compiled code, requires .NET 10 runtime)
+- .NET 10 runtime required (can be installed via installer)
+- Runtime loaded from system installation
+- Code is pre-compiled to native format (ReadyToRun)
+- Dynamic code compiled quickly at runtime (Quick JIT Tier 0), then recompiled with full optimization for hot paths (Tier 1)
 
 **Performance:**
-- ✅ **FASTEST** with ReadyToRun (pre-compiled code)
+- ✅ **FAST** with ReadyToRun (pre-compiled code runs instantly)
 - ✅ **No JIT overhead** for pre-compiled methods
-- ✅ **No .NET installation** - works everywhere
-- ✅ **Portable** - single file distribution
+- ✅ **Quick JIT** handles dynamic code efficiently (fast Tier 0, optimized Tier 1)
+- ✅ **Smaller size** - ~2.6 MB vs ~120 MB
+- ✅ **Installer can bundle .NET** - automatic installation
 - ✅ **Consistent performance** - same speed on all systems
 
 **Startup Time:**
-- ~300-600ms (with ReadyToRun pre-compiled code)
+- ~300-600ms (with ReadyToRun pre-compiled code + Quick JIT, if .NET already loaded)
+- ~500-800ms (if .NET needs to be loaded from disk)
 - Meets ClassicPanel's <1s startup goal ✅
 
 ## Performance Test Results
@@ -71,13 +75,19 @@ Based on typical WinForms desktop applications:
 |----------------|--------------|-----------|---------------|
 | Framework-Dependent | 500-800ms | 1-5 MB | ✅ Yes |
 | Self-Contained (No R2R) | 1000-2000ms | ~110 MB | ❌ No |
-| **Self-Contained + ReadyToRun** | **300-600ms** | **~120 MB** | **❌ No** |
+| **Framework-Dependent + ReadyToRun + Quick JIT** | **300-800ms** | **~2.6 MB** | **✅ Yes** |
 
-## Why Self-Contained + ReadyToRun Wins
+## Why Framework-Dependent + ReadyToRun is Optimal
 
-### 1. Speed
-- **ReadyToRun eliminates JIT overhead** - code is pre-compiled
-- Consistent fast startup on all systems
+### 1. Size
+- **Much smaller application** - ~2.6 MB vs ~120 MB
+- Faster downloads and updates
+- Less disk space required
+
+### 2. Speed
+- **ReadyToRun eliminates JIT overhead** - code is pre-compiled at build time
+- **Quick JIT provides fast compilation** for dynamic code at runtime (Tier 0), then recompiles hot paths with full optimization (Tier 1)
+- Fast startup if .NET runtime is already loaded
 - No dependency on whether .NET is already in memory
 
 ### 2. User Experience

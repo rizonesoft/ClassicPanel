@@ -8,7 +8,7 @@ The WinForms implementation provides complete implementations of all UI abstract
 
 - **Full Compatibility**: All abstraction interfaces are fully implemented
 - **Performance**: WinForms provides lower overhead and faster startup
-- **ReadyToRun Compatible**: Full .NET compatibility maintained (no AOT restrictions)
+- **ReadyToRun + Quick JIT Compatible**: Full .NET compatibility maintained (no AOT restrictions)
 - **Native Windows Integration**: Seamless integration with Windows UI
 
 ## Components
@@ -62,10 +62,12 @@ WinForms is the recommended UI framework for ClassicPanel because:
 - Better performance for large lists
 - Native Windows controls
 
-## ReadyToRun Compatibility
+## ReadyToRun + Quick JIT Compatibility
 
-This implementation is fully compatible with ReadyToRun compilation:
+This implementation is fully compatible with ReadyToRun + Quick JIT compilation:
 - All .NET features available (reflection, dynamic types, etc.)
 - No trimming restrictions
+- ReadyToRun pre-compiles code at build time
+- Quick JIT handles dynamic code at runtime efficiently
 - Full compatibility with .NET 10
 

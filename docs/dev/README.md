@@ -20,9 +20,9 @@ Welcome to the ClassicPanel developer documentation. This section contains techn
 ### Development Guides
 - [Getting Started](getting-started.md) - Initial setup and first steps
 - [CPL Interop Guide](cpl-interop.md) - Control Panel interop implementation
-- [Deployment Explained](deployment-explained.md) - Understanding self-contained vs ReadyToRun
-- [Performance Comparison](performance-comparison.md) - Self-contained vs framework-dependent performance analysis
-- [Extension Deployment](extension-deployment.md) - Building framework-dependent extensions (IMPORTANT: Extensions do NOT use self-contained)
+- [Deployment Explained](deployment-explained.md) - Understanding framework-dependent vs ReadyToRun + Quick JIT
+- [Performance Comparison](performance-comparison.md) - Framework-dependent vs self-contained performance analysis
+- [Extension Deployment](extension-deployment.md) - Building framework-dependent extensions (IMPORTANT: Extensions are framework-dependent)
 
 ## Standards
 

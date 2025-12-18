@@ -12,7 +12,7 @@
     
     <!-- Extension projects output to system/ subfolder -->
     <!-- Regular builds: build/configuration/system/ -->
-    <!-- Published builds: build/publish/system/ -->
+    <!-- Published builds: build/release/system/ -->
     <ExtensionOutputSubfolder Condition="'$(IsExtensionProject)' == 'true'">system\</ExtensionOutputSubfolder>
     <ExtensionOutputSubfolder Condition="'$(ExtensionOutputSubfolder)' == ''"></ExtensionOutputSubfolder>
     
@@ -24,14 +24,19 @@
     <OutputPath Condition="'$(Configuration)' == 'Debug' AND '$(IsExtensionProject)' != 'true'">$(BaseOutputPath)debug\</OutputPath>
     <OutputPath Condition="'$(Configuration)' == 'Debug' AND '$(IsExtensionProject)' == 'true'">$(BaseOutputPath)debug\$(ExtensionOutputSubfolder)</OutputPath>
     
+    <!-- Prevent .NET from appending TFM/RID to output path for all builds -->
+    <!-- Both Debug and Release builds output directly to build/configuration/ -->
+    <AppendTargetFrameworkToOutputPath Condition="'$(IsExtensionProject)' != 'true'">false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath Condition="'$(IsExtensionProject)' != 'true'">false</AppendRuntimeIdentifierToOutputPath>
+    
     <IntermediateOutputPath Condition="'$(Configuration)' == 'Release'">$(BaseIntermediateOutputPath)release\</IntermediateOutputPath>
     <IntermediateOutputPath Condition="'$(Configuration)' == 'Debug'">$(BaseIntermediateOutputPath)debug\</IntermediateOutputPath>
     
     <!-- Publish directory - shared across all configurations -->
-    <!-- Main app: build/publish/ -->
-    <!-- Extensions: build/publish/system/ -->
-    <PublishDir Condition="'$(IsExtensionProject)' != 'true'">$(BaseOutputPath)publish\</PublishDir>
-    <PublishDir Condition="'$(IsExtensionProject)' == 'true'">$(BaseOutputPath)publish\$(ExtensionOutputSubfolder)</PublishDir>
+    <!-- Main app: build/release/ -->
+    <!-- Extensions: build/release/system/ -->
+    <PublishDir Condition="'$(IsExtensionProject)' != 'true'">$(BaseOutputPath)release\</PublishDir>
+    <PublishDir Condition="'$(IsExtensionProject)' == 'true'">$(BaseOutputPath)release\$(ExtensionOutputSubfolder)</PublishDir>
     
     <!-- Ensure single-file publishes don't extract DLLs to the publish directory -->
     <!-- Note: This only applies to main app, extensions are framework-dependent DLLs -->

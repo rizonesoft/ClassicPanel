@@ -2,29 +2,29 @@
 
 ## Overview
 
-ClassicPanel uses a **hybrid deployment model**:
-- **Main Application**: Self-contained with ReadyToRun (includes .NET runtime)
-- **Extensions**: Framework-dependent (rely on runtime from main app)
+ClassicPanel uses a **framework-dependent deployment model**:
+- **Main Application**: Framework-dependent with ReadyToRun + Quick JIT (requires .NET 10 runtime)
+- **Extensions**: Framework-dependent (rely on .NET 10 runtime)
 
 This approach ensures:
-- ✅ Single runtime for all components (~120 MB total, not per extension)
+- ✅ Small application size (~2.6 MB main app, not ~120 MB)
 - ✅ Extensions are small and lightweight (typically 50 KB - 5 MB each)
-- ✅ All extensions share the same runtime from the main app
-- ✅ No need for .NET installation on user systems
+- ✅ All components share the same .NET 10 runtime
+- ✅ Installer can bundle .NET 10 runtime for automatic installation
 
 ## Architecture
 
 ```
 ClassicPanel/
-├── ClassicPanel.exe          # Self-contained (~120 MB) - Includes .NET runtime
+├── ClassicPanel.exe          # Framework-dependent (~2.6 MB) - Requires .NET 10 runtime
 └── system/
-    ├── SystemProperties.cpl  # Framework-dependent (~200 KB) - Uses main app's runtime
+    ├── SystemProperties.cpl  # Framework-dependent (~200 KB) - Uses .NET 10 runtime
     ├── TaskManager.cpl       # Framework-dependent (~150 KB)
     ├── RegistryEditor.cpl    # Framework-dependent (~300 KB)
     └── ... (100+ extensions) # All framework-dependent
 ```
 
-**Total Size**: ~120 MB (main app) + ~10-50 MB (all extensions combined) = ~130-170 MB
+**Total Size**: ~2.6 MB (main app) + ~10-50 MB (all extensions combined) = ~13-53 MB (plus .NET 10 runtime if not installed)
 
 ## Extension Build Configuration
 
@@ -54,14 +54,14 @@ ClassicPanel/
 ## Build Outputs
 
 ### Main Application
-- **Location**: `build/publish/ClassicPanel.exe`
-- **Type**: Self-contained single file with ReadyToRun
-- **Size**: ~122 MB
-- **Contains**: Application code + .NET runtime bundled
+- **Location**: `build/release/ClassicPanel.exe`
+- **Type**: Framework-dependent with ReadyToRun + Quick JIT
+- **Size**: ~2.6 MB
+- **Contains**: Application code only (requires .NET 10 runtime)
 
 ### Extensions
-- **Debug Build**: `build/debug/system/net10.0-windows/win-x64/ExtensionName.dll`
-- **Release Build**: `build/release/system/net10.0-windows/win-x64/ExtensionName.dll`
+- **Debug Build**: `build/debug/system/ExtensionName.dll`
+- **Release Build**: `build/release/system/ExtensionName.dll`
 - **Type**: Framework-dependent DLLs
 - **Size**: Typically 3 KB - 5 MB each (depending on functionality)
 - **Contains**: Extension code only (no runtime)

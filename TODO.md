@@ -1636,7 +1636,7 @@ This document outlines the complete development roadmap from initial structure t
 - **Feature Rich**: Rich features without bloat
 - **Framework Choice**: Use C++ when performance-critical, C# for UI and rapid development
 - **Performance**: Prioritize speed and responsiveness
-- **ReadyToRun**: Pre-compiled for fast startup, full .NET compatibility maintained
+- **ReadyToRun + Quick JIT**: Pre-compiled code at build time + fast runtime compilation for dynamic code, full .NET compatibility maintained
 
 ### Common Requirements for All Extensions
 - [ ] Create extension project in `src/Extensions/[ExtensionName]/`

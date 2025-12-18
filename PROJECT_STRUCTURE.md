@@ -66,25 +66,16 @@ src/
 ```
 build/
 ├── build.bat                     # Build script (Windows)
+├── build.sh                      # Build script (Linux/macOS)
 ├── installer/                    # InnoSetup installer scripts
-├── release/                      # Release build output (lowercase)
-│   └── net10.0-windows/win-x64/ # Framework/RID subdirectory
-│       └── ClassicPanel.exe      # ~290 KB
-├── debug/                        # Debug build output (lowercase)
-│   └── net10.0-windows/win-x64/ # Framework/RID subdirectory
-│       └── ClassicPanel.exe      # ~290 KB
-├── publish/                      # Published executables (shared, self-contained)
-│   ├── ClassicPanel.exe          # ~122 MB (includes .NET runtime)
-│   └── system/                   # Extension DLLs (framework-dependent)
-│       └── net10.0-windows/win-x64/
-│           └── ExtensionName.dll # ~3-5000 KB each
-├── debug/                        # Debug build output
-│   └── system/                   # Debug extension DLLs
-│       └── net10.0-windows/win-x64/
-│           └── ExtensionName.dll
 ├── release/                      # Release build output
-│   └── system/                   # Release extension DLLs
-│       └── net10.0-windows/win-x64/
+│   ├── ClassicPanel.exe          # ~2.6 MB (framework-dependent with ReadyToRun)
+│   └── system/                   # Release extension DLLs (framework-dependent)
+│       └── ExtensionName.dll     # ~3-5000 KB each
+├── debug/                        # Debug build output
+│   └── net10.0-windows/win-x64/ # Framework/RID subdirectory
+│       ├── ClassicPanel.exe      # ~290 KB
+│       └── system/               # Debug extension DLLs
 │           └── ExtensionName.dll
 └── obj/                          # Intermediate build files
 ```
@@ -138,7 +129,7 @@ prompts/
 ## Key Files
 
 ### Project Configuration
-- **`src/ClassicPanel.csproj`**: .NET 10 project with ReadyToRun enabled
+- **`src/ClassicPanel.csproj`**: .NET 10 project with ReadyToRun + Quick JIT enabled
 - **`.gitignore`**: Git ignore rules for .NET projects
 
 ### Documentation
@@ -153,7 +144,7 @@ prompts/
 - **.NET 10** (LTS)
 - **C# 14**
 - **Windows Forms** (WinForms)
-- **ReadyToRun** (Pre-compiled for fast startup, full .NET compatibility maintained)
+- **ReadyToRun + Quick JIT** (Pre-compiled code at build time + fast runtime compilation for dynamic code, full .NET compatibility maintained)
 - **P/Invoke** (Platform Invocation Services)
 
 ## Development Workflow

@@ -8,15 +8,14 @@
 1. ✅ Follow `standards/coding-standards.md`
 2. ✅ Always update documentation (docs/dev/, docs/user/, standards/)
 3. ✅ Mark TODO.md tasks as `- [x]` when complete
-4. ✅ Test with Release build (includes ReadyToRun for faster startup)
+4. ✅ Test with Release build (includes ReadyToRun + Quick JIT for faster startup)
 5. ✅ Ensure performance maintained or improved
 6. ✅ No breaking changes (backward compatible)
 7. ✅ Update TODO.md before committing
 
 **Build & Test:**
 ```bash
-dotnet build -c Release
-dotnet publish -c Release -p:PublishSingleFile=true
+dotnet build -c Release -p:GenerateAssemblyInfo=false
 ```
 
 **Commit Format:**
@@ -31,7 +30,7 @@ Phase: [X.Y], Task: [X.Y.Z]
 
 You are a senior C# .NET 10 developer with extensive experience in Windows Forms, P/Invoke interop, and modern desktop application development. You have deep knowledge of Windows API, Control Panel architecture, performance optimization, and creating beautiful, intuitive user interfaces. You follow best practices, write clean, maintainable code, and always prioritize user experience, performance, and code quality.
 
-**IMPORTANT**: ClassicPanel uses .NET 10 with ReadyToRun compilation for faster startup. ReadyToRun maintains full .NET compatibility - all features are available (reflection, dynamic types, etc.). Native AOT is NOT used.
+**IMPORTANT**: ClassicPanel uses .NET 10 with ReadyToRun + Quick JIT compilation for faster startup. ReadyToRun pre-compiles code at build time, Quick JIT handles dynamic code at runtime. Both maintain full .NET compatibility - all features are available (reflection, dynamic types, etc.). Native AOT is NOT used.
 
 ## Project Context
 
@@ -43,11 +42,11 @@ You are a senior C# .NET 10 developer with extensive experience in Windows Forms
 - **Comprehensive**: Support for 100+ settings/utilities with extensible architecture
 
 ### Technology Stack
-- **Framework**: .NET 10 (LTS) with ReadyToRun compilation for faster startup
+- **Framework**: .NET 10 (LTS) with ReadyToRun + Quick JIT compilation for faster startup
 - **Language**: C# 14
 - **UI Framework**: Windows Forms (WinForms)
 - **Target OS**: Windows 10 and Windows 11 (x64)
-- **Deployment**: Self-contained single-file executable with ReadyToRun (includes .NET runtime - no separate .NET installation required for end users; ReadyToRun enables faster startup)
+- **Deployment**: Framework-dependent executable with ReadyToRun + Quick JIT (requires .NET 10 runtime - installer can bundle .NET runtime; ReadyToRun pre-compiles code at build time, Quick JIT handles dynamic code at runtime for faster startup)
 
 ### Key Features & Vision
 - **Classic Windows Control Panel Items**: Complete implementation of all Windows XP/7/8/10 Control Panel items (100+ items across Hardware, Security, System, Network, Programs, Appearance, Mobile, and Backup categories) - match original Windows layouts exactly
@@ -164,7 +163,7 @@ ClassicPanel/
 - [ ] Test error cases and edge conditions
 - [ ] Test on Windows 10 (multiple versions)
 - [ ] Test on Windows 11 (multiple versions)
-- [ ] Test with Release build (includes ReadyToRun for faster startup)
+- [ ] Test with Debug build (for development testing)
 - [ ] Verify no regressions in existing features
 - [ ] Performance testing (compare before/after)
 - [ ] Accessibility testing (keyboard nav, screen readers)
@@ -188,26 +187,27 @@ dotnet build -c Release -p:GenerateAssemblyInfo=false
 dotnet publish -c Release -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:SelfContained=true -p:RuntimeIdentifier=win-x64 -p:GenerateAssemblyInfo=false
 
 # Test Debug build
-.\build\debug\net10.0-windows\win-x64\ClassicPanel.exe
+.\build\debug\ClassicPanel.exe
 
-# Test Release build
-.\build\release\net10.0-windows\win-x64\ClassicPanel.exe
+# Test Debug build (for development testing)
+.\build\debug\ClassicPanel.exe
 
-# Test Published build (MOST IMPORTANT - this is what users get)
-.\build\publish\ClassicPanel.exe
+# Test Release build (before major releases)
+.\build\release\ClassicPanel.exe
+
+.\build\release\ClassicPanel.exe
 ```
 
 **Build Checklist:**
 - [ ] Debug build succeeds without warnings
 - [ ] Release build succeeds without warnings
-- [ ] Publish succeeds (creates `build/publish/ClassicPanel.exe` ~122 MB)
+- [ ] Release build succeeds (creates `build/release/ClassicPanel.exe` ~2.6 MB)
 - [ ] Debug build runs smoothly
 - [ ] Release build runs smoothly
 - [ ] Published build runs smoothly (CRITICAL - test this!)
 - [ ] Build outputs to correct directories:
-  - Debug: `build/debug/net10.0-windows/win-x64/`
-  - Release: `build/release/net10.0-windows/win-x64/`
-  - Published: `build/publish/`
+  - Debug: `build/debug/`
+  - Release: `build/release/`
 - [ ] Improvements verified visually and functionally in all builds
 - [ ] Performance maintained or improved
 - [ ] No new memory leaks introduced
