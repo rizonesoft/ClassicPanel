@@ -44,6 +44,9 @@ public partial class DebugToolsWindow : Form
 
         // Subscribe to new log entries
         DebugLogCapture.OnLogEntry += OnLogEntryReceived;
+        
+        // Subscribe to theme changes
+        ThemeManager.OnThemeChanged += (effectiveTheme) => ApplyTheme();
     }
 
     private void InitializeComponent()
@@ -93,8 +96,8 @@ public partial class DebugToolsWindow : Form
         var consoleToolbar = new Panel
         {
             Dock = DockStyle.Top,
-            Height = 35,
-            Padding = new Padding(5)
+            Height = 45,
+            Padding = new Padding(10, 8, 10, 8)
         };
         consolePanel.Controls.Add(consoleToolbar);
 
@@ -103,7 +106,7 @@ public partial class DebugToolsWindow : Form
             Text = "Auto-scroll",
             Checked = true,
             AutoSize = true,
-            Location = new Point(5, 8)
+            Location = new Point(10, 12)
         };
         _autoScrollCheckBox.CheckedChanged += (s, e) => _isAutoScroll = _autoScrollCheckBox.Checked;
         consoleToolbar.Controls.Add(_autoScrollCheckBox);
@@ -111,8 +114,9 @@ public partial class DebugToolsWindow : Form
         _clearConsoleButton = new Button
         {
             Text = "Clear",
-            Size = new Size(75, 23),
-            Location = new Point(120, 5)
+            Size = new Size(80, 28),
+            Location = new Point(120, 8),
+            UseVisualStyleBackColor = true
         };
         _clearConsoleButton.Click += (s, e) => _consoleTextBox.Clear();
         consoleToolbar.Controls.Add(_clearConsoleButton);
@@ -121,11 +125,11 @@ public partial class DebugToolsWindow : Form
         _consoleTextBox = new RichTextBox
         {
             Dock = DockStyle.Fill,
-            Font = new Font("Consolas", 9F),
+            Font = new Font("Consolas", 9.5F),
             ReadOnly = true,
-            BackColor = Color.FromArgb(30, 30, 30),
-            ForeColor = Color.FromArgb(212, 212, 212),
-            DetectUrls = false
+            DetectUrls = false,
+            Margin = new Padding(0),
+            Padding = new Padding(8)
         };
         consolePanel.Controls.Add(_consoleTextBox);
 
@@ -143,8 +147,8 @@ public partial class DebugToolsWindow : Form
         var logToolbar = new Panel
         {
             Dock = DockStyle.Top,
-            Height = 35,
-            Padding = new Padding(5)
+            Height = 45,
+            Padding = new Padding(10, 8, 10, 8)
         };
         logViewerPanel.Controls.Add(logToolbar);
 
@@ -152,15 +156,16 @@ public partial class DebugToolsWindow : Form
         {
             Text = "Filter:",
             AutoSize = true,
-            Location = new Point(5, 10)
+            Location = new Point(10, 13)
         };
         logToolbar.Controls.Add(logLevelLabel);
 
         _logLevelComboBox = new ComboBox
         {
             DropDownStyle = ComboBoxStyle.DropDownList,
-            Size = new Size(100, 23),
-            Location = new Point(50, 7)
+            Size = new Size(120, 28),
+            Location = new Point(60, 10),
+            Font = new Font("Segoe UI", 9F)
         };
         _logLevelComboBox.Items.AddRange(new[] { "All", "Info", "Warning", "Error", "Critical" });
         _logLevelComboBox.SelectedIndex = 0;
@@ -182,8 +187,9 @@ public partial class DebugToolsWindow : Form
         _clearLogButton = new Button
         {
             Text = "Clear",
-            Size = new Size(75, 23),
-            Location = new Point(160, 5)
+            Size = new Size(80, 28),
+            Location = new Point(190, 10),
+            UseVisualStyleBackColor = true
         };
         _clearLogButton.Click += (s, e) =>
         {
@@ -195,8 +201,9 @@ public partial class DebugToolsWindow : Form
         _exportLogButton = new Button
         {
             Text = "Export...",
-            Size = new Size(75, 23),
-            Location = new Point(245, 5)
+            Size = new Size(80, 28),
+            Location = new Point(280, 10),
+            UseVisualStyleBackColor = true
         };
         _exportLogButton.Click += (s, e) => ExportLog();
         logToolbar.Controls.Add(_exportLogButton);
@@ -205,11 +212,11 @@ public partial class DebugToolsWindow : Form
         _logViewerTextBox = new RichTextBox
         {
             Dock = DockStyle.Fill,
-            Font = new Font("Consolas", 9F),
+            Font = new Font("Consolas", 9.5F),
             ReadOnly = true,
-            BackColor = Color.FromArgb(30, 30, 30),
-            ForeColor = Color.FromArgb(212, 212, 212),
-            DetectUrls = false
+            DetectUrls = false,
+            Margin = new Padding(0),
+            Padding = new Padding(8)
         };
         logViewerPanel.Controls.Add(_logViewerTextBox);
 
@@ -223,7 +230,7 @@ public partial class DebugToolsWindow : Form
         {
             Dock = DockStyle.Fill,
             AutoScroll = true,
-            Padding = new Padding(10)
+            Padding = new Padding(15, 15, 15, 15)
         };
         metricsTab.Controls.Add(_metricsPanel);
 
@@ -289,13 +296,25 @@ public partial class DebugToolsWindow : Form
             ? DebugLogCapture.LogEntries
             : DebugLogCapture.GetEntriesByLevel(_currentLogFilter);
 
-        var sb = new StringBuilder();
+        var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+        
+        _logViewerTextBox.Clear();
         foreach (var entry in entries)
         {
-            AppendLogEntry(sb, entry);
-        }
+            var color = entry.Level switch
+            {
+                LogLevel.Info => isDarkMode ? Color.FromArgb(220, 220, 220) : Color.FromArgb(30, 30, 30),
+                LogLevel.Warning => Color.FromArgb(255, 165, 0),
+                LogLevel.Error => Color.FromArgb(220, 53, 69),
+                LogLevel.Critical => Color.FromArgb(139, 0, 0),
+                _ => isDarkMode ? Color.FromArgb(220, 220, 220) : Color.FromArgb(30, 30, 30)
+            };
 
-        _logViewerTextBox.Text = sb.ToString();
+            _logViewerTextBox.SelectionStart = _logViewerTextBox.Text.Length;
+            _logViewerTextBox.SelectionColor = color;
+            _logViewerTextBox.AppendText(entry.FormattedMessage + Environment.NewLine);
+        }
+        
         _logViewerTextBox.SelectionStart = _logViewerTextBox.Text.Length;
         _logViewerTextBox.ScrollToCaret();
     }
@@ -308,97 +327,97 @@ public partial class DebugToolsWindow : Form
         _metricsPanel.Controls.Clear();
 
         var metrics = PerformanceMonitor.GetMetrics();
-        var y = 10;
+        var y = 15;
 
         // Performance Metrics
-        AddMetricLabel(_metricsPanel, "Performance Metrics", y, true);
-        y += 25;
-
-        AddMetricLabel(_metricsPanel, $"Startup Time: {metrics.StartupTimeMs} ms", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Memory Usage: {metrics.MemoryUsageMB:F2} MB", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Peak Memory: {metrics.PeakMemoryUsageMB:F2} MB", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"CPU Usage: {metrics.CpuUsagePercent:F1}%", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Operations Tracked: {metrics.OperationCount}", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Average Operation Time: {metrics.AverageOperationTimeMs:F2} ms", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Slowest Operation: {metrics.SlowestOperationTimeMs} ms", y);
-        y += 30;
+        var perfGroup = CreateGroupBox("Performance Metrics", y, 280);
+        y = 30;
+        AddMetricLabel(perfGroup, $"Startup Time: {metrics.StartupTimeMs:N0} ms", y);
+        y += 24;
+        AddMetricLabel(perfGroup, $"Memory Usage: {metrics.MemoryUsageMB:F2} MB", y);
+        y += 24;
+        AddMetricLabel(perfGroup, $"Peak Memory: {metrics.PeakMemoryUsageMB:F2} MB", y);
+        y += 24;
+        AddMetricLabel(perfGroup, $"CPU Usage: {metrics.CpuUsagePercent:F1}%", y);
+        y += 24;
+        AddMetricLabel(perfGroup, $"Operations Tracked: {metrics.OperationCount:N0}", y);
+        y += 24;
+        AddMetricLabel(perfGroup, $"Average Operation Time: {metrics.AverageOperationTimeMs:F2} ms", y);
+        y += 24;
+        AddMetricLabel(perfGroup, $"Slowest Operation: {metrics.SlowestOperationTimeMs:N0} ms", y);
+        _metricsPanel.Controls.Add(perfGroup);
+        y = perfGroup.Bottom + 20;
 
         // Log Statistics
-        AddMetricLabel(_metricsPanel, "Log Statistics", y, true);
-        y += 25;
-
+        var logGroup = CreateGroupBox("Log Statistics", y, 200);
+        var logY = 30;
         var logEntries = DebugLogCapture.LogEntries;
         var infoCount = logEntries.Count(e => e.Level == LogLevel.Info);
         var warningCount = logEntries.Count(e => e.Level == LogLevel.Warning);
         var errorCount = logEntries.Count(e => e.Level == LogLevel.Error);
         var criticalCount = logEntries.Count(e => e.Level == LogLevel.Critical);
 
-        AddMetricLabel(_metricsPanel, $"Total Log Entries: {DebugLogCapture.EntryCount}", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Info: {infoCount}", y, false, Color.LightBlue);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Warnings: {warningCount}", y, false, Color.Orange);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Errors: {errorCount}", y, false, Color.Red);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Critical: {criticalCount}", y, false, Color.DarkRed);
-        y += 30;
+        AddMetricLabel(logGroup, $"Total Log Entries: {DebugLogCapture.EntryCount:N0}", logY);
+        logY += 24;
+        AddMetricLabel(logGroup, $"Info: {infoCount:N0}", logY, false, Color.FromArgb(100, 149, 237));
+        logY += 24;
+        AddMetricLabel(logGroup, $"Warnings: {warningCount:N0}", logY, false, Color.FromArgb(255, 165, 0));
+        logY += 24;
+        AddMetricLabel(logGroup, $"Errors: {errorCount:N0}", logY, false, Color.FromArgb(220, 53, 69));
+        logY += 24;
+        AddMetricLabel(logGroup, $"Critical: {criticalCount:N0}", logY, false, Color.FromArgb(139, 0, 0));
+        _metricsPanel.Controls.Add(logGroup);
+        y = logGroup.Bottom + 20;
 
         // System Information
-        AddMetricLabel(_metricsPanel, "System Information", y, true);
-        y += 25;
-
-        AddMetricLabel(_metricsPanel, $"OS Version: {Environment.OSVersion}", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $".NET Version: {Environment.Version}", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Machine Name: {Environment.MachineName}", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"User Name: {Environment.UserName}", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Processor Count: {Environment.ProcessorCount}", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"Working Set: {Environment.WorkingSet / 1024 / 1024:F2} MB", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"64-bit Process: {Environment.Is64BitProcess}", y);
-        y += 20;
-
-        AddMetricLabel(_metricsPanel, $"64-bit OS: {Environment.Is64BitOperatingSystem}", y);
+        var sysGroup = CreateGroupBox("System Information", y, 400);
+        var sysY = 30;
+        AddMetricLabel(sysGroup, $"OS Version: {Environment.OSVersion}", sysY);
+        sysY += 24;
+        AddMetricLabel(sysGroup, $".NET Version: {Environment.Version}", sysY);
+        sysY += 24;
+        AddMetricLabel(sysGroup, $"Machine Name: {Environment.MachineName}", sysY);
+        sysY += 24;
+        AddMetricLabel(sysGroup, $"User Name: {Environment.UserName}", sysY);
+        sysY += 24;
+        AddMetricLabel(sysGroup, $"Processor Count: {Environment.ProcessorCount}", sysY);
+        sysY += 24;
+        AddMetricLabel(sysGroup, $"Working Set: {Environment.WorkingSet / 1024.0 / 1024.0:F2} MB", sysY);
+        sysY += 24;
+        AddMetricLabel(sysGroup, $"64-bit Process: {Environment.Is64BitProcess}", sysY);
+        sysY += 24;
+        AddMetricLabel(sysGroup, $"64-bit OS: {Environment.Is64BitOperatingSystem}", sysY);
+        _metricsPanel.Controls.Add(sysGroup);
     }
 
-    private void AddMetricLabel(Panel panel, string text, int y, bool isHeader = false, Color? color = null)
+    private GroupBox CreateGroupBox(string title, int y, int height)
     {
+        var groupBox = new GroupBox
+        {
+            Text = title,
+            Location = new Point(15, y),
+            Size = new Size(_metricsPanel.Width - 30, height),
+            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+            Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+            Padding = new Padding(10, 8, 10, 10)
+        };
+        return groupBox;
+    }
+
+    private void AddMetricLabel(Control parent, string text, int y, bool isHeader = false, Color? color = null)
+    {
+        var theme = ThemeManager.CurrentThemeData;
+        var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+        
         var label = new Label
         {
             Text = text,
             AutoSize = true,
-            Location = new Point(10, y),
-            Font = isHeader ? new Font("Segoe UI", 10F, FontStyle.Bold) : new Font("Segoe UI", 9F),
-            ForeColor = color ?? (isHeader ? Color.White : Color.FromArgb(212, 212, 212))
+            Location = new Point(12, y),
+            Font = isHeader ? new Font("Segoe UI", 10.5F, FontStyle.Bold) : new Font("Segoe UI", 9.5F),
+            ForeColor = color ?? (isDarkMode ? Color.FromArgb(240, 240, 240) : Color.FromArgb(30, 30, 30))
         };
-        panel.Controls.Add(label);
+        parent.Controls.Add(label);
     }
 
     private void AppendLogEntry(StringBuilder sb, LogEntry entry)
@@ -425,13 +444,14 @@ public partial class DebugToolsWindow : Form
 
         if (_isAutoScroll && _consoleTextBox != null)
         {
+            var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
             var color = entry.Level switch
             {
-                LogLevel.Info => Color.FromArgb(212, 212, 212),
-                LogLevel.Warning => Color.Orange,
-                LogLevel.Error => Color.Red,
-                LogLevel.Critical => Color.DarkRed,
-                _ => Color.FromArgb(212, 212, 212)
+                LogLevel.Info => isDarkMode ? Color.FromArgb(220, 220, 220) : Color.FromArgb(30, 30, 30),
+                LogLevel.Warning => Color.FromArgb(255, 165, 0),
+                LogLevel.Error => Color.FromArgb(220, 53, 69),
+                LogLevel.Critical => Color.FromArgb(139, 0, 0),
+                _ => isDarkMode ? Color.FromArgb(220, 220, 220) : Color.FromArgb(30, 30, 30)
             };
 
             _consoleTextBox.SelectionStart = _consoleTextBox.Text.Length;
@@ -479,21 +499,65 @@ public partial class DebugToolsWindow : Form
         this.BackColor = theme.BackgroundColor;
         this.ForeColor = theme.ForegroundColor;
 
+        // Apply theme to tab control
+        if (_tabControl != null)
+        {
+            _tabControl.BackColor = theme.BackgroundColor;
+            _tabControl.ForeColor = theme.ForegroundColor;
+        }
+
+        // Apply theme to console text box
         if (_consoleTextBox != null)
         {
-            _consoleTextBox.BackColor = isDarkMode ? Color.FromArgb(30, 30, 30) : Color.White;
-            _consoleTextBox.ForeColor = isDarkMode ? Color.FromArgb(212, 212, 212) : Color.Black;
+            _consoleTextBox.BackColor = isDarkMode ? Color.FromArgb(25, 25, 25) : Color.White;
+            _consoleTextBox.ForeColor = isDarkMode ? Color.FromArgb(220, 220, 220) : Color.FromArgb(30, 30, 30);
         }
 
+        // Apply theme to log viewer text box
         if (_logViewerTextBox != null)
         {
-            _logViewerTextBox.BackColor = isDarkMode ? Color.FromArgb(30, 30, 30) : Color.White;
-            _logViewerTextBox.ForeColor = isDarkMode ? Color.FromArgb(212, 212, 212) : Color.Black;
+            _logViewerTextBox.BackColor = isDarkMode ? Color.FromArgb(25, 25, 25) : Color.White;
+            _logViewerTextBox.ForeColor = isDarkMode ? Color.FromArgb(220, 220, 220) : Color.FromArgb(30, 30, 30);
         }
 
+        // Apply theme to metrics panel
         if (_metricsPanel != null)
         {
             _metricsPanel.BackColor = theme.BackgroundColor;
+            _metricsPanel.ForeColor = theme.ForegroundColor;
+            
+            // Update all group boxes
+            foreach (Control control in _metricsPanel.Controls)
+            {
+                if (control is GroupBox groupBox)
+                {
+                    groupBox.BackColor = theme.BackgroundColor;
+                    groupBox.ForeColor = theme.ForegroundColor;
+                }
+            }
+        }
+
+        // Apply theme to checkboxes and buttons
+        if (_autoScrollCheckBox != null)
+        {
+            _autoScrollCheckBox.BackColor = theme.BackgroundColor;
+            _autoScrollCheckBox.ForeColor = theme.ForegroundColor;
+        }
+
+        if (_logLevelComboBox != null)
+        {
+            _logLevelComboBox.BackColor = isDarkMode ? Color.FromArgb(45, 45, 45) : Color.White;
+            _logLevelComboBox.ForeColor = theme.ForegroundColor;
+        }
+    }
+
+    protected override void OnVisibleChanged(EventArgs e)
+    {
+        base.OnVisibleChanged(e);
+        if (Visible)
+        {
+            ApplyTheme();
+            RefreshMetrics();
         }
     }
 
@@ -518,6 +582,7 @@ public partial class DebugToolsWindow : Form
             _refreshTimer?.Stop();
             _refreshTimer?.Dispose();
             DebugLogCapture.OnLogEntry -= OnLogEntryReceived;
+            ThemeManager.OnThemeChanged -= (effectiveTheme) => ApplyTheme();
         }
         base.Dispose(disposing);
     }
