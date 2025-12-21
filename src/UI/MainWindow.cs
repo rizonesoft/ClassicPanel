@@ -67,19 +67,17 @@ public partial class MainWindow : Form
             ShowDropDownArrow = false // Hide arrow for cleaner look
         };
         
-        // Create custom dropdown menu with proper styling
-        var viewDropDownMenu = new ToolStripDropDownMenu();
-        viewDropDownMenu.Renderer = new ModernMenuStripRenderer();
-        viewDropDownMenu.Padding = new Padding(8, 8, 8, 8); // 8px container spacing
-        var dropdownBgColor = GetDropdownBackgroundColor();
-        viewDropDownMenu.BackColor = dropdownBgColor;
-        viewDropDownMenu.ShowImageMargin = true;
+        // Create custom dropdown menu with proper container padding
+        var viewDropDownMenu = new ModernDropDownMenu();
+        viewDropDownMenu.ContainerPadding = 12;
+        viewDropDownMenu.ApplyThemeColors();
         viewDropDownMenu.ShowCheckMargin = true;
+        var dropdownBgColor = GetDropdownBackgroundColor();
         
         // Assign the custom dropdown menu to the button
         _viewDropDownButton.DropDown = viewDropDownMenu;
         
-        // Add view options to dropdown with proper spacing and matching background
+        // Add view options to dropdown
         var largeIconsItem = new ToolStripMenuItem("Large Icons", null, (s, e) => SetViewMode("LargeIcons"))
         {
             Tag = "view-large.svg",
@@ -524,16 +522,13 @@ public partial class MainWindow : Form
     }
     
     /// <summary>
-    /// Creates a styled ToolStripDropDownMenu with custom renderer and padding.
+    /// Creates a styled ModernDropDownMenu with custom renderer and container padding.
     /// </summary>
-    private ToolStripDropDownMenu CreateStyledDropDownMenu(System.Drawing.Color bgColor)
+    private ModernDropDownMenu CreateStyledDropDownMenu(System.Drawing.Color bgColor)
     {
-        var dropDown = new ToolStripDropDownMenu();
-        dropDown.Renderer = new ModernMenuStripRenderer();
-        dropDown.Padding = new Padding(8, 8, 8, 8); // 8px container spacing
-        dropDown.BackColor = bgColor;
-        dropDown.ShowImageMargin = true;
-        dropDown.ShowCheckMargin = false;
+        var dropDown = new ModernDropDownMenu();
+        dropDown.ContainerPadding = 12;
+        dropDown.ApplyThemeColors();
         return dropDown;
     }
     
