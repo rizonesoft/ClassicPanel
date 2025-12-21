@@ -20,6 +20,9 @@ internal static class Program
             // Initialize performance monitoring first
             PerformanceMonitor.Initialize();
 
+            // Start debug log capture
+            DebugLogCapture.StartCapture();
+
             // Validate platform requirements (Windows 10/11, 64-bit)
             // This will show an error dialog and exit if requirements aren't met
             if (!PlatformValidator.ValidatePlatform())

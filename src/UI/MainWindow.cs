@@ -11,12 +11,15 @@ public partial class MainWindow : Form
     private ToolStripButton? _themeToggleButton;
     private ToolStripDropDownButton? _viewDropDownButton;
     private string _currentViewMode = "LargeIcons";
+    private DebugToolsWindow? _debugToolsWindow;
+    private ToolStripStatusLabel? _debugButton;
 
     public MainWindow()
     {
         InitializeComponent();
         InitializeMenu();
         InitializeToolbar();
+        InitializeStatusBar();
         ApplyTheme();
         
         // Subscribe to theme changes
@@ -711,5 +714,63 @@ public partial class MainWindow : Form
         return isDarkMode
             ? System.Drawing.Color.FromArgb(0x1E, 0x1E, 0x1E)  // Dark mode: #1E1E1E
             : System.Drawing.Color.FromArgb(0xFF, 0xFF, 0xFF); // Light mode: white
+    }
+
+    /// <summary>
+    /// Initializes the status bar with debug tools button.
+    /// </summary>
+    private void InitializeStatusBar()
+    {
+        // Add main status label
+        var statusLabel = new ToolStripStatusLabel("Ready")
+        {
+            Spring = true,
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+        statusStrip.Items.Add(statusLabel);
+
+        // Add separator
+        statusStrip.Items.Add(new ToolStripSeparator());
+
+        // Add debug tools button on the far right
+        var isDarkMode = string.Equals(ThemeManager.GetEffectiveTheme(), AppConstants.DarkTheme, StringComparison.OrdinalIgnoreCase);
+        var debugIcon = SvgFileLoader.RenderSvgFileThemed("bug.svg", 16, isDarkMode);
+        
+        _debugButton = new ToolStripStatusLabel
+        {
+            ToolTipText = "Debug Tools",
+            Image = debugIcon,
+            DisplayStyle = ToolStripItemDisplayStyle.Image,
+            AutoSize = false,
+            Size = new Size(22, 22),
+            Alignment = ToolStripItemAlignment.Right,
+            IsLink = true
+        };
+        _debugButton.Click += (s, e) => ShowDebugTools();
+        statusStrip.Items.Add(_debugButton);
+    }
+
+    /// <summary>
+    /// Shows or focuses the debug tools window.
+    /// </summary>
+    private void ShowDebugTools()
+    {
+        if (_debugToolsWindow == null || _debugToolsWindow.IsDisposed)
+        {
+            _debugToolsWindow = new DebugToolsWindow
+            {
+                Owner = this
+            };
+        }
+
+        if (_debugToolsWindow.Visible)
+        {
+            _debugToolsWindow.BringToFront();
+            _debugToolsWindow.Focus();
+        }
+        else
+        {
+            _debugToolsWindow.Show();
+        }
     }
 }
