@@ -25,6 +25,7 @@ public partial class DebugToolsWindow : Form
     private Button _clearConsoleButton;
     private Button _clearLogButton;
     private Button _exportLogButton;
+    private Action<string>? _themeChangedHandler;
 
     public DebugToolsWindow()
     {
@@ -46,7 +47,8 @@ public partial class DebugToolsWindow : Form
         DebugLogCapture.OnLogEntry += OnLogEntryReceived;
         
         // Subscribe to theme changes
-        ThemeManager.OnThemeChanged += (effectiveTheme) => ApplyTheme();
+        _themeChangedHandler = (effectiveTheme) => ApplyTheme();
+        ThemeManager.OnThemeChanged += _themeChangedHandler;
     }
 
     private void InitializeComponent()
@@ -582,7 +584,10 @@ public partial class DebugToolsWindow : Form
             _refreshTimer?.Stop();
             _refreshTimer?.Dispose();
             DebugLogCapture.OnLogEntry -= OnLogEntryReceived;
-            ThemeManager.OnThemeChanged -= (effectiveTheme) => ApplyTheme();
+            if (_themeChangedHandler != null)
+            {
+                ThemeManager.OnThemeChanged -= _themeChangedHandler;
+            }
         }
         base.Dispose(disposing);
     }
