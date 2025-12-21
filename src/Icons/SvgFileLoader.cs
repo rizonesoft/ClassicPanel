@@ -105,27 +105,31 @@ public static class SvgFileLoader
             }
         }
 
-        // Load and render SVG file using SkiaSharp
+        // Load and render SVG file using SkiaSharp with fallback strategies
         Bitmap bitmap;
         if (File.Exists(svgFilePath))
         {
-            // File-based (for development/testing)
-            bitmap = RenderSvgWithSkiaSharp(svgFilePath, size, color);
+            // File-based (for development/testing) with retry and fallback
+            bitmap = RetryWithFallback(
+                () => RenderSvgWithSkiaSharp(svgFilePath, size, color),
+                () => CreateFallbackIcon(size, color), // Fallback to blank icon
+                maxRetries: 2,
+                context: $"SvgFileLoader.RenderSvgFile({Path.GetFileName(svgFilePath)})"
+            );
         }
         else
         {
-            // Try as embedded resource
-            try
-            {
-                var resourceName = GetEmbeddedResourceName(Path.GetFileName(svgFilePath));
-                var svgContent = ReadEmbeddedSvg(resourceName);
-                bitmap = RenderSvgFromString(svgContent, size, color);
-            }
-        catch (FileNotFoundException ex)
-        {
-            Debug.WriteLine($"[SvgFileLoader] Failed to load SVG file: {svgFilePath}. {ex.Message}");
-            throw new FileNotFoundException($"SVG file not found: {svgFilePath}", svgFilePath, ex);
-        }
+            // Try as embedded resource with fallback
+            bitmap = TryWithFallback(
+                () =>
+                {
+                    var resourceName = GetEmbeddedResourceName(Path.GetFileName(svgFilePath));
+                    var svgContent = ReadEmbeddedSvg(resourceName);
+                    return RenderSvgFromString(svgContent, size, color);
+                },
+                () => CreateFallbackIcon(size, color), // Fallback to blank icon
+                context: $"SvgFileLoader.RenderSvgFile({Path.GetFileName(svgFilePath)})"
+            );
         }
 
         // Cache the result
@@ -149,31 +153,19 @@ public static class SvgFileLoader
     /// <returns>A bitmap containing the rendered icon, or a blank bitmap if file not found.</returns>
     public static Bitmap RenderSvgFileThemed(string fileName, int size, bool isDarkMode)
     {
-        try
-        {
-            var resourceName = GetEmbeddedResourceName(fileName);
-            var svgContent = ReadEmbeddedSvg(resourceName);
-            var color = isDarkMode ? Color.White : Color.Black;
-            return RenderSvgFromString(svgContent, size, color);
-        }
-        catch (FileNotFoundException ex)
-        {
-            // Log error but don't crash - return blank bitmap
-            Debug.WriteLine($"[SvgFileLoader] Embedded SVG resource not found: {fileName}. {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            // Log error but don't crash - return blank bitmap
-            Debug.WriteLine($"[SvgFileLoader] Error loading embedded SVG resource {fileName}: {ex.Message}");
-        }
+        var color = isDarkMode ? Color.White : Color.Black;
         
-        // Return a blank bitmap if SVG file not found (prevents crash)
-        var blankBitmap = new Bitmap(size, size);
-        using (var g = Graphics.FromImage(blankBitmap))
-        {
-            g.Clear(Color.Transparent);
-        }
-        return blankBitmap;
+        // Use fallback strategy - return blank icon if loading fails
+        return TryWithFallback(
+            () =>
+            {
+                var resourceName = GetEmbeddedResourceName(fileName);
+                var svgContent = ReadEmbeddedSvg(resourceName);
+                return RenderSvgFromString(svgContent, size, color);
+            },
+            () => CreateFallbackIcon(size, color), // Fallback to blank icon
+            context: $"SvgFileLoader.RenderSvgFileThemed({fileName})"
+        );
     }
 
 
@@ -194,14 +186,16 @@ public static class SvgFileLoader
         var tempFile = Path.GetTempFileName();
         try
         {
-            try
-            {
-                File.WriteAllText(tempFile, svgContent);
-            }
-            catch (IOException ex)
-            {
-                throw new InvalidOperationException($"Failed to write temporary SVG file: {tempFile}", ex);
-            }
+            // Retry file write operation for transient errors
+            RetryOperation<object?>(
+                () =>
+                {
+                    File.WriteAllText(tempFile, svgContent);
+                    return null;
+                },
+                maxRetries: 2,
+                context: "SvgFileLoader.RenderSvgFromString.WriteTempFile"
+            );
             
             // Load SVG using SkiaSharp
             using var svg = new SKSvg();
@@ -307,27 +301,14 @@ public static class SvgFileLoader
     /// <returns>A bitmap containing the rendered icon.</returns>
     private static Bitmap RenderSvgWithSkiaSharp(string svgFilePath, int size, Color color)
     {
-        try
-        {
-            // Read SVG content from file
-            var svgContent = File.ReadAllText(svgFilePath);
-            return RenderSvgFromString(svgContent, size, color);
-        }
-        catch (FileNotFoundException ex)
-        {
-            Debug.WriteLine($"[SvgFileLoader] SVG file not found: {svgFilePath}. {ex.Message}");
-            throw;
-        }
-        catch (IOException ex)
-        {
-            Debug.WriteLine($"[SvgFileLoader] I/O error reading SVG file: {svgFilePath}. {ex.Message}");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[SvgFileLoader] Failed to render SVG file: {svgFilePath}. {ex.Message}");
-            throw;
-        }
+        // Retry file read operation for transient errors
+        var svgContent = RetryOperation(
+            () => File.ReadAllText(svgFilePath),
+            maxRetries: 2,
+            context: $"SvgFileLoader.RenderSvgWithSkiaSharp({Path.GetFileName(svgFilePath)})"
+        );
+        
+        return RenderSvgFromString(svgContent, size, color);
     }
 
     /// <summary>
@@ -352,5 +333,161 @@ public static class SvgFileLoader
             _cache.Clear();
         }
     }
+
+    #region Error Recovery Helpers
+
+    /// <summary>
+    /// Executes an operation with retry logic for transient file I/O errors.
+    /// </summary>
+    /// <typeparam name="T">The return type of the operation.</typeparam>
+    /// <param name="operation">The operation to execute.</param>
+    /// <param name="maxRetries">Maximum number of retry attempts.</param>
+    /// <param name="context">Optional context for error logging.</param>
+    /// <returns>The result of the operation.</returns>
+    private static T RetryOperation<T>(Func<T> operation, int maxRetries = 2, string? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+
+        Exception? lastException = null;
+        int delay = 50; // Initial delay in milliseconds
+
+        for (int attempt = 0; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                return operation();
+            }
+            catch (IOException ex)
+            {
+                lastException = ex;
+
+                // Check if this is a transient file error (sharing violation, lock violation, etc.)
+                var errorCode = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
+                bool isTransient = errorCode == 32 || errorCode == 33 || errorCode == 5; // ERROR_SHARING_VIOLATION, ERROR_LOCK_VIOLATION, ERROR_ACCESS_DENIED
+
+                if (!isTransient || attempt >= maxRetries)
+                {
+                    // Not transient or last attempt - throw
+                    if (!string.IsNullOrEmpty(context))
+                    {
+                        Debug.WriteLine($"[SvgFileLoader] {context}: Operation failed after {attempt + 1} attempts: {ex.Message}");
+                    }
+                    throw;
+                }
+
+                // Wait before retrying (exponential backoff)
+                Thread.Sleep(delay);
+                delay = Math.Min(delay * 2, 500); // Max 500ms delay
+            }
+            catch (Exception ex)
+            {
+                // Non-IO exceptions are not retried
+                if (!string.IsNullOrEmpty(context))
+                {
+                    Debug.WriteLine($"[SvgFileLoader] {context}: Operation failed: {ex.Message}");
+                }
+                throw;
+            }
+        }
+
+        throw lastException ?? new InvalidOperationException("Retry operation failed with unknown error");
+    }
+
+    /// <summary>
+    /// Executes an operation with retry logic and a fallback if all retries fail.
+    /// </summary>
+    /// <typeparam name="T">The return type of the operation.</typeparam>
+    /// <param name="operation">The operation to execute with retry.</param>
+    /// <param name="fallbackOperation">The fallback operation to execute if all retries fail.</param>
+    /// <param name="maxRetries">Maximum number of retry attempts.</param>
+    /// <param name="context">Optional context for error logging.</param>
+    /// <returns>The result of the operation if successful, otherwise the result of the fallback operation.</returns>
+    private static T RetryWithFallback<T>(Func<T> operation, Func<T> fallbackOperation, int maxRetries = 2, string? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(fallbackOperation);
+
+        try
+        {
+            return RetryOperation(operation, maxRetries, context);
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrEmpty(context))
+            {
+                Debug.WriteLine($"[SvgFileLoader] {context}: All retry attempts failed, using fallback: {ex.Message}");
+            }
+
+            try
+            {
+                return fallbackOperation();
+            }
+            catch (Exception fallbackEx)
+            {
+                if (!string.IsNullOrEmpty(context))
+                {
+                    Debug.WriteLine($"[SvgFileLoader] {context}: Fallback operation also failed: {fallbackEx.Message}");
+                }
+                throw;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Executes an operation with a fallback if it fails.
+    /// </summary>
+    /// <typeparam name="T">The return type of the operation.</typeparam>
+    /// <param name="operation">The operation to execute.</param>
+    /// <param name="fallbackOperation">The fallback operation to execute if primary fails.</param>
+    /// <param name="context">Optional context for error logging.</param>
+    /// <returns>The result of the primary operation if successful, otherwise the result of the fallback operation.</returns>
+    private static T TryWithFallback<T>(Func<T> operation, Func<T> fallbackOperation, string? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(fallbackOperation);
+
+        try
+        {
+            return operation();
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrEmpty(context))
+            {
+                Debug.WriteLine($"[SvgFileLoader] {context}: Operation failed, using fallback: {ex.Message}");
+            }
+
+            try
+            {
+                return fallbackOperation();
+            }
+            catch (Exception fallbackEx)
+            {
+                if (!string.IsNullOrEmpty(context))
+                {
+                    Debug.WriteLine($"[SvgFileLoader] {context}: Fallback operation also failed: {fallbackEx.Message}");
+                }
+                throw;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates a fallback blank icon when SVG loading fails.
+    /// </summary>
+    /// <param name="size">The size of the icon in pixels.</param>
+    /// <param name="color">The color for the icon (not used for blank icon, but kept for consistency).</param>
+    /// <returns>A blank transparent bitmap.</returns>
+    private static Bitmap CreateFallbackIcon(int size, Color color)
+    {
+        var blankBitmap = new Bitmap(size, size);
+        using (var g = Graphics.FromImage(blankBitmap))
+        {
+            g.Clear(Color.Transparent);
+        }
+        return blankBitmap;
+    }
+
+    #endregion
 }
 

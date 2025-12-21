@@ -78,89 +78,96 @@ internal static class WindowsThemeInterop
 
     /// <summary>
     /// Gets the Windows apps theme preference (light or dark).
+    /// Uses retry logic for transient registry access errors.
     /// </summary>
     /// <returns>True if light theme is preferred, false if dark theme is preferred.</returns>
     public static bool GetWindowsAppsTheme()
     {
-        try
-        {
-            if (RegOpenKeyEx((nint)HKEY_CURRENT_USER, ThemeRegistryPath, 0, KEY_READ, out nint hKey) == 0)
+        // Use retry logic with fallback to default theme
+        return ErrorRecovery.RetryWithFallback(
+            () =>
             {
-                try
+                if (RegOpenKeyEx((nint)HKEY_CURRENT_USER, ThemeRegistryPath, 0, KEY_READ, out nint hKey) == 0)
                 {
-                    uint type;
-                    byte[] data = new byte[4];
-                    int dataSize = 4;
-
-                    if (RegQueryValueEx(hKey, AppsUseLightThemeValue, 0, out type, data, ref dataSize) == 0 && type == REG_DWORD)
+                    try
                     {
-                        int value = BitConverter.ToInt32(data, 0);
-                        return value != 0; // 1 = light, 0 = dark
+                        uint type;
+                        byte[] data = new byte[4];
+                        int dataSize = 4;
+
+                        if (RegQueryValueEx(hKey, AppsUseLightThemeValue, 0, out type, data, ref dataSize) == 0 && type == REG_DWORD)
+                        {
+                            int value = BitConverter.ToInt32(data, 0);
+                            return value != 0; // 1 = light, 0 = dark
+                        }
+                    }
+                    finally
+                    {
+                        RegCloseKey(hKey);
                     }
                 }
-                finally
-                {
-                    RegCloseKey(hKey);
-                }
-            }
-        }
-        catch
-        {
-            // Fall through to default
-        }
-
-        // Default to light theme if unable to read
-        return true;
+                throw new InvalidOperationException("Failed to read Windows apps theme from registry");
+            },
+            () => true, // Fallback to light theme
+            maxRetries: 1,
+            initialDelayMs: 50,
+            isTransientError: ex => ex is IOException, // Registry access can be transient
+            context: "WindowsThemeInterop.GetWindowsAppsTheme"
+        );
     }
 
     /// <summary>
     /// Gets the Windows accent color.
     /// Windows stores the accent color in the registry as ABGR (Alpha, Blue, Green, Red) format.
+    /// Uses retry logic for transient registry access errors.
     /// </summary>
     /// <returns>The accent color as a Color, or null if unable to read.</returns>
     public static System.Drawing.Color? GetWindowsAccentColor()
     {
-        try
-        {
-            if (RegOpenKeyEx((nint)HKEY_CURRENT_USER, AccentColorRegistryPath, 0, KEY_READ, out nint hKey) == 0)
+        // Use retry logic with fallback to null
+        return ErrorRecovery.RetryWithFallback(
+            () =>
             {
-                try
+                if (RegOpenKeyEx((nint)HKEY_CURRENT_USER, AccentColorRegistryPath, 0, KEY_READ, out nint hKey) == 0)
                 {
-                    uint type;
-                    byte[] data = new byte[4];
-                    int dataSize = 4;
-
-                    if (RegQueryValueEx(hKey, AccentColorValue, 0, out type, data, ref dataSize) == 0 && type == REG_DWORD)
+                    try
                     {
-                        // Windows stores accent color as ABGR (Alpha, Blue, Green, Red) in a DWORD
-                        // Bits 31-24: Alpha
-                        // Bits 23-16: Blue
-                        // Bits 15-8:  Green
-                        // Bits 7-0:   Red
-                        uint colorValue = BitConverter.ToUInt32(data, 0);
-                        
-                        // Extract ABGR components
-                        byte a = (byte)((colorValue >> 24) & 0xFF);  // Alpha from bits 31-24
-                        byte b = (byte)((colorValue >> 16) & 0xFF);  // Blue from bits 23-16
-                        byte g = (byte)((colorValue >> 8) & 0xFF);   // Green from bits 15-8
-                        byte r = (byte)(colorValue & 0xFF);          // Red from bits 7-0
+                        uint type;
+                        byte[] data = new byte[4];
+                        int dataSize = 4;
 
-                        // Create Color with ARGB order (System.Drawing.Color expects ARGB)
-                        return System.Drawing.Color.FromArgb(a, r, g, b);
+                        if (RegQueryValueEx(hKey, AccentColorValue, 0, out type, data, ref dataSize) == 0 && type == REG_DWORD)
+                        {
+                            // Windows stores accent color as ABGR (Alpha, Blue, Green, Red) in a DWORD
+                            // Bits 31-24: Alpha
+                            // Bits 23-16: Blue
+                            // Bits 15-8:  Green
+                            // Bits 7-0:   Red
+                            uint colorValue = BitConverter.ToUInt32(data, 0);
+                            
+                            // Extract ABGR components
+                            byte a = (byte)((colorValue >> 24) & 0xFF);  // Alpha from bits 31-24
+                            byte b = (byte)((colorValue >> 16) & 0xFF);  // Blue from bits 23-16
+                            byte g = (byte)((colorValue >> 8) & 0xFF);   // Green from bits 15-8
+                            byte r = (byte)(colorValue & 0xFF);          // Red from bits 7-0
+
+                            // Create Color with ARGB order (System.Drawing.Color expects ARGB)
+                            return System.Drawing.Color.FromArgb(a, r, g, b);
+                        }
+                    }
+                    finally
+                    {
+                        RegCloseKey(hKey);
                     }
                 }
-                finally
-                {
-                    RegCloseKey(hKey);
-                }
-            }
-        }
-        catch
-        {
-            // Fall through to null
-        }
-
-        return null;
+                throw new InvalidOperationException("Failed to read Windows accent color from registry");
+            },
+            () => (System.Drawing.Color?)null, // Fallback to null
+            maxRetries: 1,
+            initialDelayMs: 50,
+            isTransientError: ex => ex is IOException, // Registry access can be transient
+            context: "WindowsThemeInterop.GetWindowsAccentColor"
+        );
     }
 
     /// <summary>
