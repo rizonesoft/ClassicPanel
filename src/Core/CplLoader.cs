@@ -53,35 +53,18 @@ public class CplLoader
             return;
         }
 
-        // 2. Scan for .cpl files with retry logic for transient errors
+        // 2. Scan for .cpl files
         try
         {
-            string[] files = ErrorRecovery.Retry(
-                () => Directory.GetFiles(systemPath, "*.cpl"),
-                maxRetries: 2,
-                initialDelayMs: 50,
-                isTransientError: ErrorRecovery.IsTransientFileError,
-                context: "CplLoader.LoadSystemFolder.GetFiles"
-            );
-
-            foreach (var file in files)
+            foreach (var file in Directory.GetFiles(systemPath, "*.cpl"))
             {
                 try
                 {
-                    // Retry loading individual CPL files for transient errors
-                    ErrorRecovery.Retry(
-                        () => LoadCplFile(file),
-                        maxRetries: 1,
-                        initialDelayMs: 100,
-                        isTransientError: ex => ex is IOException && ErrorRecovery.IsTransientFileError(ex),
-                        context: $"CplLoader.LoadCplFile({Path.GetFileName(file)})"
-                    );
+                    LoadCplFile(file);
                 }
                 catch (Exception ex)
                 {
                     // Log error but continue with other files
-                    // Non-transient errors (e.g., BadImageFormatException, DllNotFoundException) are expected
-                    // for invalid or incompatible CPL files, so we just log and continue
                     var errorInfo = ErrorInfo.FromCplLoadError(file, ex);
                     errorInfo.ShowToUser = false; // Don't show to user for individual file failures
                     ErrorLogger.LogError(errorInfo);
@@ -90,7 +73,7 @@ public class CplLoader
         }
         catch (Exception ex)
         {
-            // Log error if directory access fails after retries
+            // Log error if directory access fails
             ErrorLogger.LogError("Failed to scan system folder for CPL files", ex, "CplLoader.LoadSystemFolder");
         }
     }
@@ -158,11 +141,37 @@ public class CplLoader
         }
         catch (DllNotFoundException ex)
         {
+            // Clean up native library handle before re-throwing
+            if (hModule != nint.Zero)
+            {
+                try
+                {
+                    NativeLibrary.Free(hModule);
+                }
+                catch
+                {
+                    // Ignore cleanup errors
+                }
+            }
+            
             // Library not found - log and rethrow
             throw new DllNotFoundException($"Control Panel library not found: {filePath}", ex);
         }
         catch (BadImageFormatException ex)
         {
+            // Clean up native library handle before re-throwing
+            if (hModule != nint.Zero)
+            {
+                try
+                {
+                    NativeLibrary.Free(hModule);
+                }
+                catch
+                {
+                    // Ignore cleanup errors
+                }
+            }
+            
             // Invalid DLL format (e.g., wrong architecture) - log and rethrow
             throw new BadImageFormatException($"Invalid Control Panel library format: {filePath}", ex);
         }
@@ -186,4 +195,3 @@ public class CplLoader
         }
     }
 }
-
