@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using ClassicPanel.Core;
 
 namespace ClassicPanel.Core.Theme;
 
@@ -209,10 +210,8 @@ internal static class WindowsThemeInterop
         }
         catch (Exception ex)
         {
-            // Log error in debug builds only
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"Failed to set title bar theme: {ex.Message}");
-            #endif
+            // Log error but don't show to user (theme setting failure is non-critical)
+            ErrorLogger.LogWarning($"Failed to set window title bar theme: {ex.Message}", "WindowsThemeInterop.SetWindowTitleBarTheme");
             return false;
         }
     }

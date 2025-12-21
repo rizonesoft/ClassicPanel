@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
@@ -39,28 +40,42 @@ public static class SvgFileLoader
     /// <returns>The SVG content as a string.</returns>
     private static string ReadEmbeddedSvg(string resourceName)
     {
-        var assembly = Assembly.GetEntryAssembly();
-        if (assembly == null)
+        try
         {
-            throw new InvalidOperationException("Cannot get entry assembly");
+            var assembly = Assembly.GetEntryAssembly();
+            if (assembly == null)
+            {
+                throw new InvalidOperationException("Cannot get entry assembly");
+            }
+            
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream != null)
+            {
+                using var reader = new StreamReader(stream);
+                return reader.ReadToEnd();
+            }
+            
+            // If not found, provide helpful error message with available resources
+            var availableResources = assembly.GetManifestResourceNames();
+            var availableList = availableResources.Length > 0 
+                ? string.Join("\n  - ", availableResources) 
+                : "(no resources found)";
+            
+            throw new FileNotFoundException(
+                $"Embedded resource not found: {resourceName}\n" +
+                $"Available resources:\n  - {availableList}");
         }
-        
-        using var stream = assembly.GetManifestResourceStream(resourceName);
-        if (stream != null)
+        catch (FileNotFoundException)
         {
-            using var reader = new StreamReader(stream);
-            return reader.ReadToEnd();
+            // Re-throw FileNotFoundException as-is
+            throw;
         }
-        
-        // If not found, provide helpful error message with available resources
-        var availableResources = assembly.GetManifestResourceNames();
-        var availableList = availableResources.Length > 0 
-            ? string.Join("\n  - ", availableResources) 
-            : "(no resources found)";
-        
-        throw new FileNotFoundException(
-            $"Embedded resource not found: {resourceName}\n" +
-            $"Available resources:\n  - {availableList}");
+        catch (Exception ex)
+        {
+            // Log error and re-throw
+            Debug.WriteLine($"[SvgFileLoader] Failed to read embedded SVG resource: {resourceName}. {ex.Message}");
+            throw;
+        }
     }
 
     /// <summary>
@@ -106,10 +121,11 @@ public static class SvgFileLoader
                 var svgContent = ReadEmbeddedSvg(resourceName);
                 bitmap = RenderSvgFromString(svgContent, size, color);
             }
-            catch (FileNotFoundException)
-            {
-                throw new FileNotFoundException($"SVG file not found: {svgFilePath}", svgFilePath);
-            }
+        catch (FileNotFoundException ex)
+        {
+            Debug.WriteLine($"[SvgFileLoader] Failed to load SVG file: {svgFilePath}. {ex.Message}");
+            throw new FileNotFoundException($"SVG file not found: {svgFilePath}", svgFilePath, ex);
+        }
         }
 
         // Cache the result
@@ -143,11 +159,12 @@ public static class SvgFileLoader
         catch (FileNotFoundException ex)
         {
             // Log error but don't crash - return blank bitmap
-            System.Diagnostics.Debug.WriteLine($"[SvgFileLoader] Embedded resource not found: {fileName}. {ex.Message}");
+            Debug.WriteLine($"[SvgFileLoader] Embedded SVG resource not found: {fileName}. {ex.Message}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[SvgFileLoader] Error loading embedded resource {fileName}: {ex.Message}");
+            // Log error but don't crash - return blank bitmap
+            Debug.WriteLine($"[SvgFileLoader] Error loading embedded SVG resource {fileName}: {ex.Message}");
         }
         
         // Return a blank bitmap if SVG file not found (prevents crash)
@@ -177,15 +194,29 @@ public static class SvgFileLoader
         var tempFile = Path.GetTempFileName();
         try
         {
-            File.WriteAllText(tempFile, svgContent);
+            try
+            {
+                File.WriteAllText(tempFile, svgContent);
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidOperationException($"Failed to write temporary SVG file: {tempFile}", ex);
+            }
             
             // Load SVG using SkiaSharp
             using var svg = new SKSvg();
-            svg.Load(tempFile);
+            try
+            {
+                svg.Load(tempFile);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to load SVG from temporary file: {tempFile}", ex);
+            }
             
             if (svg.Picture == null)
             {
-                throw new InvalidOperationException("Failed to load SVG content");
+                throw new InvalidOperationException("Failed to load SVG content - Picture is null");
             }
             
             // Get SVG dimensions
@@ -213,6 +244,11 @@ public static class SvgFileLoader
             // Create SkiaSharp surface and render
             var info = new SKImageInfo(size, size, SKColorType.Bgra8888, SKAlphaType.Premul);
             using var surface = SKSurface.Create(info);
+            if (surface == null)
+            {
+                throw new InvalidOperationException("Failed to create SkiaSharp surface");
+            }
+            
             var canvas = surface.Canvas;
             
             // Clear with transparent background
@@ -229,16 +265,35 @@ public static class SvgFileLoader
             // Convert SkiaSharp image to System.Drawing.Bitmap
             using var image = surface.Snapshot();
             using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+            if (data == null)
+            {
+                throw new InvalidOperationException("Failed to encode SVG image to PNG");
+            }
+            
             using var stream = data.AsStream();
             
             return new Bitmap(stream);
+        }
+        catch (Exception ex)
+        {
+            // Log error and re-throw
+            Debug.WriteLine($"[SvgFileLoader] Failed to render SVG from string: {ex.Message}");
+            throw;
         }
         finally
         {
             // Clean up temporary file
             if (File.Exists(tempFile))
             {
-                try { File.Delete(tempFile); } catch { }
+                try
+                {
+                    File.Delete(tempFile);
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't throw - cleanup failure is not critical
+                    Debug.WriteLine($"[SvgFileLoader] Failed to delete temporary file: {tempFile}. {ex.Message}");
+                }
             }
         }
     }
@@ -252,9 +307,27 @@ public static class SvgFileLoader
     /// <returns>A bitmap containing the rendered icon.</returns>
     private static Bitmap RenderSvgWithSkiaSharp(string svgFilePath, int size, Color color)
     {
-        // Read SVG content from file
-        var svgContent = File.ReadAllText(svgFilePath);
-        return RenderSvgFromString(svgContent, size, color);
+        try
+        {
+            // Read SVG content from file
+            var svgContent = File.ReadAllText(svgFilePath);
+            return RenderSvgFromString(svgContent, size, color);
+        }
+        catch (FileNotFoundException ex)
+        {
+            Debug.WriteLine($"[SvgFileLoader] SVG file not found: {svgFilePath}. {ex.Message}");
+            throw;
+        }
+        catch (IOException ex)
+        {
+            Debug.WriteLine($"[SvgFileLoader] I/O error reading SVG file: {svgFilePath}. {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[SvgFileLoader] Failed to render SVG file: {svgFilePath}. {ex.Message}");
+            throw;
+        }
     }
 
     /// <summary>
