@@ -83,6 +83,10 @@ ClassicPanel is designed with a **plugin-based, multi-framework architecture** t
 - `PerformanceMonitor`: Monitors application performance (startup time, memory, operation timings)
 - `PerformanceMetrics`: Data structure for performance metrics snapshots
 - `OperationTimer`: Timer for measuring operation performance
+- `ErrorInfo`: Encapsulates error details (message, severity, context, timestamp)
+- `ErrorLogger`: Centralized error logging system with debug output and user notifications
+- `ErrorRecovery`: Retry logic and fallback strategies for transient operations
+- `DebugLogCapture`: Captures `Debug.WriteLine` output for real-time log viewing
 - `ExtensionManager`: Manages CPL extensions and plugins (future)
 - `FrameworkLoader`: Loads and manages UI framework implementations (future)
 
@@ -141,6 +145,17 @@ Main application window:
 - **Menu System**: File (Refresh, Exit), View (view modes), Help (About)
 - **Toolbar**: Quick access to view modes
 - **Context Menu**: Right-click options
+- **Status Bar**: Shows item count, status, and debug tools button
+
+### DebugToolsWindow
+
+Developer debug tools window (accessible via bug icon in status bar):
+
+- **Console Tab**: Real-time debug output with color-coded log levels
+- **Log Viewer Tab**: Filterable log entries with export functionality
+- **Metrics Tab**: Performance metrics, log statistics, and system information
+- **Theme Support**: Automatically adapts to application theme (light/dark/system)
+- **Real-time Updates**: Auto-refreshes console and metrics on timer interval
 
 ## Data Flow
 
@@ -248,10 +263,14 @@ Strings are extracted from the .cpl file's string resources:
 
 ## Error Handling
 
-- **File Loading Errors**: Caught and logged, skipped files
-- **P/Invoke Errors**: Check `Marshal.GetLastWin32Error()` after calls
-- **Resource Extraction Errors**: Fallback to defaults
-- **Execution Errors**: Display user-friendly message
+- **Centralized Error System**: `ErrorInfo` class encapsulates error details (message, severity, context, timestamp)
+- **Error Logging**: `ErrorLogger` provides `LogError` for debug output and `ShowError` for user-facing messages
+- **Error Recovery**: `ErrorRecovery` class implements retry logic with exponential backoff and fallback strategies
+- **File Loading Errors**: Caught and logged via `ErrorLogger`, skipped files continue processing
+- **P/Invoke Errors**: Check `Marshal.GetLastWin32Error()` after calls, logged via `ErrorLogger`
+- **Resource Extraction Errors**: Fallback to defaults, logged with appropriate severity
+- **Execution Errors**: Display user-friendly message via `ErrorLogger.ShowError`
+- **Debug Tools**: `DebugToolsWindow` provides real-time console output and log viewer for troubleshooting
 
 ## Configuration
 

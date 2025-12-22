@@ -28,8 +28,8 @@ partial class MainWindow
     /// </summary>
     private void InitializeComponent()
     {
-        this.menuStrip = new ClassicPanel.UI.ModernMenuStrip();
-        this.toolStrip = new ClassicPanel.UI.ModernToolStrip();
+        this.menuStrip = new ClassicPanel.UI.Controls.ModernMenuStrip();
+        this.toolStrip = new ClassicPanel.UI.Controls.ModernToolStrip();
         this.statusStrip = new System.Windows.Forms.StatusStrip();
         this.SuspendLayout();
         // 
@@ -72,8 +72,8 @@ partial class MainWindow
         this.PerformLayout();
     }
 
-    private ClassicPanel.UI.ModernMenuStrip menuStrip;
-    private ClassicPanel.UI.ModernToolStrip toolStrip;
+    private ClassicPanel.UI.Controls.ModernMenuStrip menuStrip;
+    private ClassicPanel.UI.Controls.ModernToolStrip toolStrip;
     private System.Windows.Forms.StatusStrip statusStrip;
 
     #endregion

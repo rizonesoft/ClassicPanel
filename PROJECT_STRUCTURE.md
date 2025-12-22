@@ -29,7 +29,18 @@ src/
 ├── Program.cs                    # Application entry point
 ├── UI/
 │   ├── MainWindow.cs             # Main window class
-│   └── MainWindow.Designer.cs    # Windows Forms designer file
+│   ├── MainWindow.Designer.cs   # Windows Forms designer file
+│   ├── DebugToolsWindow.cs       # Debug tools window (console, log viewer, metrics)
+│   ├── SettingsDialog.cs         # Settings dialog
+│   ├── Controls/                 # Modern UI controls
+│   │   ├── Buttons/              # Modern button controls
+│   │   ├── Cards/                # Card-based UI components
+│   │   ├── Inputs/               # Input controls (checkboxes, comboboxes)
+│   │   ├── Menus/                # Menu controls
+│   │   ├── Tabs/                 # Tab controls
+│   │   └── Toolbars/             # Toolbar controls
+│   ├── WinForms/                 # WinForms UI implementation
+│   └── WPF/                      # WPF UI implementation (optional)
 ├── Core/
 │   ├── CplInterop.cs             # P/Invoke definitions for Control Panel API
 │   ├── CplLoader.cs              # CPL file loading and management
@@ -44,11 +55,15 @@ src/
 │   │   ├── ThemeManager.cs        # Theme manager (light/dark/system mode)
 │   │   ├── ThemeData.cs           # Theme data (colors and styling)
 │   │   └── WindowsThemeInterop.cs # Windows API interop for theme/accent colors
-│   └── Performance/                # Performance monitoring infrastructure
-│       ├── PerformanceMonitor.cs  # Main performance monitoring class
-│       ├── PerformanceMetrics.cs   # Performance metrics data structure
-│       ├── OperationTimer.cs      # Operation timing utility
-│       └── README.md              # Performance monitoring documentation
+│   ├── Performance/                # Performance monitoring infrastructure
+│   │   ├── PerformanceMonitor.cs  # Main performance monitoring class
+│   │   ├── PerformanceMetrics.cs   # Performance metrics data structure
+│   │   ├── OperationTimer.cs      # Operation timing utility
+│   │   └── README.md              # Performance monitoring documentation
+│   ├── DebugLogCapture.cs         # Debug log capture system
+│   ├── ErrorInfo.cs               # Error information structure
+│   ├── ErrorLogger.cs             # Centralized error logging
+│   ├── ErrorRecovery.cs           # Error recovery with retry logic
 │   └── PlatformValidator.cs      # Platform validation (OS version, architecture)
 ├── Extensions/                   # CPL extension projects
 │   ├── ExtensionTemplate/        # Extension template project

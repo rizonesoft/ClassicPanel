@@ -2,7 +2,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace ClassicPanel.UI;
+namespace ClassicPanel.UI.Controls;
 
 /// <summary>
 /// Custom ToolStrip control with improved styling for dark/light modes.

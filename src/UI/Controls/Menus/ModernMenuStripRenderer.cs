@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace ClassicPanel.UI;
+namespace ClassicPanel.UI.Controls;
 
 /// <summary>
 /// Fully owner-drawn MenuStrip renderer with dark/light mode support.

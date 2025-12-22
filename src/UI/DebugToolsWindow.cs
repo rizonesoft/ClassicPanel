@@ -2,6 +2,8 @@ using ClassicPanel.Core;
 using ClassicPanel.Core.Performance;
 using ClassicPanel.Core.Theme;
 using ClassicPanel.Icons;
+using ClassicPanel.UI.Controls;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 
@@ -13,18 +15,22 @@ namespace ClassicPanel.UI;
 /// </summary>
 public partial class DebugToolsWindow : Form
 {
-    private TabControl _tabControl;
+    private ModernTabControl _tabControl;
     private RichTextBox _consoleTextBox;
     private RichTextBox _logViewerTextBox;
     private Panel _metricsPanel;
     private System.Windows.Forms.Timer _refreshTimer;
     private bool _isAutoScroll = true;
     private LogLevel _currentLogFilter = LogLevel.Info;
-    private CheckBox _autoScrollCheckBox;
-    private ComboBox _logLevelComboBox;
-    private Button _clearConsoleButton;
-    private Button _clearLogButton;
-    private Button _exportLogButton;
+    private ModernCheckBox _autoScrollCheckBox;
+    private ModernComboBox _logLevelComboBox;
+    private ModernFlatButton _clearConsoleButton;
+    private ModernFlatButton _clearLogButton;
+    private ModernFlatButton _exportLogButton;
+    private FlowLayoutPanel _consoleToolbar;
+    private FlowLayoutPanel _logToolbar;
+    private Label _logLevelLabel;
+    private bool _isDarkMode;
     private Action<string>? _themeChangedHandler;
 
     public DebugToolsWindow()
@@ -63,7 +69,7 @@ public partial class DebugToolsWindow : Form
         this.WindowState = FormWindowState.Normal;
 
         // Tab control
-        _tabControl = new TabControl
+        _tabControl = new ModernTabControl
         {
             Dock = DockStyle.Fill,
             Font = new Font("Segoe UI", 9F)
@@ -95,30 +101,31 @@ public partial class DebugToolsWindow : Form
         consoleTab.Controls.Add(consolePanel);
 
         // Toolbar for console
-        var consoleToolbar = new Panel
+        var consoleToolbar = new FlowLayoutPanel
         {
             Dock = DockStyle.Top,
-            Height = 45,
-            Padding = new Padding(10, 8, 10, 8)
+            Height = 48,
+            Padding = new Padding(12, 10, 12, 10),
+            WrapContents = false,
+            AutoSize = false
         };
         consolePanel.Controls.Add(consoleToolbar);
 
-        _autoScrollCheckBox = new CheckBox
+        _autoScrollCheckBox = new ModernCheckBox
         {
             Text = "Auto-scroll",
             Checked = true,
-            AutoSize = true,
-            Location = new Point(10, 12)
+            Size = new Size(100, 28),
+            Margin = new Padding(0, 0, 16, 0)
         };
         _autoScrollCheckBox.CheckedChanged += (s, e) => _isAutoScroll = _autoScrollCheckBox.Checked;
         consoleToolbar.Controls.Add(_autoScrollCheckBox);
 
-        _clearConsoleButton = new Button
+        _clearConsoleButton = new ModernFlatButton
         {
             Text = "Clear",
             Size = new Size(80, 28),
-            Location = new Point(120, 8),
-            UseVisualStyleBackColor = true
+            Margin = new Padding(0)
         };
         _clearConsoleButton.Click += (s, e) => _consoleTextBox.Clear();
         consoleToolbar.Controls.Add(_clearConsoleButton);
@@ -146,11 +153,13 @@ public partial class DebugToolsWindow : Form
         logViewerTab.Controls.Add(logViewerPanel);
 
         // Toolbar for log viewer
-        var logToolbar = new Panel
+        var logToolbar = new FlowLayoutPanel
         {
             Dock = DockStyle.Top,
-            Height = 45,
-            Padding = new Padding(10, 8, 10, 8)
+            Height = 48,
+            Padding = new Padding(12, 10, 12, 10),
+            WrapContents = false,
+            AutoSize = false
         };
         logViewerPanel.Controls.Add(logToolbar);
 
@@ -158,16 +167,14 @@ public partial class DebugToolsWindow : Form
         {
             Text = "Filter:",
             AutoSize = true,
-            Location = new Point(10, 13)
+            Margin = new Padding(0, 6, 8, 0)
         };
         logToolbar.Controls.Add(logLevelLabel);
 
-        _logLevelComboBox = new ComboBox
+        _logLevelComboBox = new ModernComboBox
         {
-            DropDownStyle = ComboBoxStyle.DropDownList,
             Size = new Size(120, 28),
-            Location = new Point(60, 10),
-            Font = new Font("Segoe UI", 9F)
+            Margin = new Padding(0, 0, 16, 0)
         };
         _logLevelComboBox.Items.AddRange(new[] { "All", "Info", "Warning", "Error", "Critical" });
         _logLevelComboBox.SelectedIndex = 0;
@@ -186,12 +193,11 @@ public partial class DebugToolsWindow : Form
         };
         logToolbar.Controls.Add(_logLevelComboBox);
 
-        _clearLogButton = new Button
+        _clearLogButton = new ModernFlatButton
         {
             Text = "Clear",
             Size = new Size(80, 28),
-            Location = new Point(190, 10),
-            UseVisualStyleBackColor = true
+            Margin = new Padding(0, 0, 8, 0)
         };
         _clearLogButton.Click += (s, e) =>
         {
@@ -200,12 +206,11 @@ public partial class DebugToolsWindow : Form
         };
         logToolbar.Controls.Add(_clearLogButton);
 
-        _exportLogButton = new Button
+        _exportLogButton = new ModernFlatButton
         {
             Text = "Export...",
-            Size = new Size(80, 28),
-            Location = new Point(280, 10),
-            UseVisualStyleBackColor = true
+            Size = new Size(90, 28),
+            Margin = new Padding(0)
         };
         _exportLogButton.Click += (s, e) => ExportLog();
         logToolbar.Controls.Add(_exportLogButton);
@@ -504,6 +509,7 @@ public partial class DebugToolsWindow : Form
         // Apply theme to tab control
         if (_tabControl != null)
         {
+            _tabControl.IsDarkMode = isDarkMode;
             _tabControl.BackColor = theme.BackgroundColor;
             _tabControl.ForeColor = theme.ForegroundColor;
         }
@@ -542,15 +548,18 @@ public partial class DebugToolsWindow : Form
         // Apply theme to checkboxes and buttons
         if (_autoScrollCheckBox != null)
         {
-            _autoScrollCheckBox.BackColor = theme.BackgroundColor;
-            _autoScrollCheckBox.ForeColor = theme.ForegroundColor;
+            _autoScrollCheckBox.IsDarkMode = isDarkMode;
         }
 
         if (_logLevelComboBox != null)
         {
-            _logLevelComboBox.BackColor = isDarkMode ? Color.FromArgb(45, 45, 45) : Color.White;
-            _logLevelComboBox.ForeColor = theme.ForegroundColor;
+            _logLevelComboBox.IsDarkMode = isDarkMode;
         }
+
+        // Apply theme to ModernFlatButton controls
+        if (_clearConsoleButton != null) _clearConsoleButton.IsDarkMode = isDarkMode;
+        if (_clearLogButton != null) _clearLogButton.IsDarkMode = isDarkMode;
+        if (_exportLogButton != null) _exportLogButton.IsDarkMode = isDarkMode;
     }
 
     protected override void OnVisibleChanged(EventArgs e)

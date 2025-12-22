@@ -2,6 +2,7 @@ using ClassicPanel.Core;
 using ClassicPanel.Core.Performance;
 using ClassicPanel.Core.Theme;
 using ClassicPanel.Icons;
+using ClassicPanel.UI.Controls;
 using static ClassicPanel.Core.Theme.WindowsThemeInterop;
 
 namespace ClassicPanel.UI;

@@ -390,11 +390,123 @@ Fired when user double-clicks an applet in the ListView. Should execute the sele
 
 ---
 
+### DebugLogCapture
+
+Static class that captures `Debug.WriteLine` output and provides access to log entries for real-time viewing in debug tools.
+
+**Properties:**
+- `MaxEntries` (int) - Gets or sets the maximum number of log entries to keep in memory (default: 10000, minimum: 100)
+- `LogEntries` (IReadOnlyList<LogEntry>) - Gets all captured log entries
+- `EntryCount` (int) - Gets the number of log entries currently captured
+- `IsCapturing` (bool) - Gets a value indicating whether log capture is currently active
+
+**Methods:**
+- `StartCapture()` - Starts capturing debug output
+- `StopCapture()` - Stops capturing debug output
+- `AddLogEntry(string, LogLevel)` - Adds a log entry manually (for testing or custom logging)
+- `Clear()` - Clears all captured log entries
+- `GetEntriesByLevel(LogLevel)` - Gets log entries filtered by level
+- `GetEntriesByTimeRange(DateTime, DateTime)` - Gets log entries within a time range
+
+**Events:**
+- `OnLogEntry` - Raised when a new log entry is captured
+
+**LogEntry Structure:**
+```csharp
+public struct LogEntry
+{
+    public DateTime Timestamp { get; set; }
+    public string Message { get; set; }
+    public LogLevel Level { get; set; }
+    public string FormattedMessage { get; }
+}
+```
+
+**LogLevel Enum:**
+```csharp
+public enum LogLevel
+{
+    Info,
+    Warning,
+    Error,
+    Critical
+}
+```
+
+### ErrorInfo
+
+Encapsulates error details for centralized error handling.
+
+**Properties:**
+- `Message` (string) - User-friendly error message
+- `DetailedMessage` (string?) - Detailed technical error message
+- `Exception` (Exception?) - The exception that caused the error
+- `Severity` (ErrorSeverity) - Error severity level
+- `Context` (string?) - Additional context about where the error occurred
+- `AdditionalData` (Dictionary<string, object>?) - Additional error data
+- `Timestamp` (DateTime) - When the error occurred
+- `ShouldShowToUser` (bool) - Whether this error should be shown to the user
+
+**ErrorSeverity Enum:**
+```csharp
+public enum ErrorSeverity
+{
+    Information,
+    Warning,
+    Error,
+    Critical
+}
+```
+
+### ErrorLogger
+
+Static class providing centralized error logging with debug output and user notifications.
+
+**Methods:**
+- `LogError(ErrorInfo)` - Logs an error to debug output
+- `LogError(string, Exception?, string?)` - Logs an error with message, optional exception, and context
+- `LogWarning(string, string?)` - Logs a warning to debug output
+- `LogInfo(string, string?)` - Logs informational message to debug output
+- `ShowError(ErrorInfo)` - Shows a user-friendly error message via MessageBox
+- `ShowError(string, string?, Exception?)` - Shows a user-friendly error message with optional details
+
+### ErrorRecovery
+
+Static class providing retry logic and fallback strategies for transient operations.
+
+**Methods:**
+- `Retry<T>(Func<T>, int, int, Func<Exception, bool>?, string?)` - Retries an operation with exponential backoff
+- `Retry(Action, int, int, Func<Exception, bool>?, string?)` - Retries an action with exponential backoff
+- `RetryWithFallback<T>(Func<T>, Func<T>, int, int, Func<Exception, bool>?, string?)` - Retries with fallback if all retries fail
+- `WithFallback<T>(Func<T>, Func<T>, string?)` - Executes operation with fallback on error
+- `WithFallbackValue<T>(Func<T>, T, string?)` - Executes operation with fallback value on error
+- `TryRetry(Action, out Exception?, int, int, Func<Exception, bool>?, string?)` - Attempts retry, returns success status
+- `IsTransientFileError(Exception)` - Checks if an exception is a transient file I/O error
+
+## Namespace: ClassicPanel.UI
+
+### DebugToolsWindow
+
+WinForms window providing developer debug tools with console output, log viewer, and performance metrics.
+
+**Features:**
+- **Console Tab**: Real-time debug output with color-coded log levels (Info, Warning, Error, Critical)
+- **Log Viewer Tab**: Filterable log entries with level filtering and export functionality
+- **Metrics Tab**: Performance metrics, log statistics, and system information
+- **Theme Support**: Automatically adapts to application theme (light/dark/system)
+- **Auto-scroll**: Optional auto-scroll for console output
+- **Real-time Updates**: Auto-refreshes console and metrics on timer interval
+
+**Access:**
+- Click the bug icon button in the status bar (far right)
+- Window can be hidden/shown without disposing
+
+**Usage:**
+The debug tools window is automatically initialized when opened. It subscribes to `DebugLogCapture.OnLogEntry` for real-time log updates and `ThemeManager.OnThemeChanged` for theme updates.
+
 ## Future API Additions
 
 - Settings management API
-- Version information API
-- Error logging API
 - Icon extraction utilities
 - String resource extraction utilities
 

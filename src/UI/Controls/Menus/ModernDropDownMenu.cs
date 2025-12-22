@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace ClassicPanel.UI;
+namespace ClassicPanel.UI.Controls;
 
 /// <summary>
 /// Custom ToolStripDropDownMenu with proper container padding support.
